@@ -15,9 +15,7 @@
       <div ref="rightPane" class="right-pane">
         <!--   做题界面-右上布局(代码编辑区)    -->
         <div class="right-top-box" ref="rightTopBox">
-          <div style="overflow: auto">
             <EditorComponent @on-dblclick="getCodeIsResize"></EditorComponent>
-          </div>
         </div>
         <!--   上下拖动条   -->
         <div class="vertical-separator" ref="verticalSeparator" @mousedown="UDMove">
@@ -148,6 +146,16 @@ const handleVerticalMouseMove = (event: MouseEvent) => {
       if (rightTopBox.value && rightBottomBox.value) {
         rightTopBox.value.style.height = `${Math.max(topBoxHeight, 48)}px`
         rightBottomBox.value.style.height = `${Math.max(bottomBoxHeight, 48)}px`
+
+        /* 同步修改 CodeEditor 高度 */
+        let vh = window.innerHeight * 0.01
+        const rightTopBoxVH = parseInt(rightTopBox.value.style.height, 10) / vh
+        // console.log(rightTopBoxVH)
+        let codeVH = rightTopBoxVH - 5;
+        if (codeVH < 11) codeVH = 11
+        if (codeVH > 81) codeVH = 81;
+        // console.log(codeVH.toString() + "vh")
+        CodeHeightVH.value = codeVH.toString() + "vh"
       }
     }
   }
@@ -155,9 +163,13 @@ const handleVerticalMouseMove = (event: MouseEvent) => {
 /* 设定初始布局占比 */
 const LRGrid = ref<string>("3.5fr auto 6.5fr")
 const UDGrid = ref<string>("7fr auto 3fr")
+
+const CodeHeightVH = ref<string>('58vh')
+provide("CodeHeightVH", CodeHeightVH);
+
 // 双击 Editor Tabs 时扩展该盒子尺寸
 const getCodeIsResize = (isEditorResize: Ref<boolean>) => {
-  console.log("接受到 CodeEditor 传来的参数: " + isEditorResize.value)
+  // console.log("接受到 CodeEditor 传来的参数: " + isEditorResize.value)
   if (isEditorResize.value) {
     LRGrid.value = "1fr auto 15fr"
     if (leftPane.value && rightPane.value) {
@@ -165,20 +177,32 @@ const getCodeIsResize = (isEditorResize: Ref<boolean>) => {
       rightPane.value.style.width = "92vw"
       setLTabDir("108px")
     }
+    //  双击初始布局时触发
     UDGrid.value = "17fr auto 1fr"
+    /* 双击拖拽后布局触发 */
+    if (rightTopBox.value && rightBottomBox.value) {
+      rightTopBox.value.style.height = '86vh';
+      CodeHeightVH.value = '81vh'  // 设置 Code 的尺寸
+      rightBottomBox.value.style.height = '48px'
+    }
   }else {
+    LRGrid.value = "3.5fr auto 6.5fr"
     if (leftPane.value && rightPane.value) {
       rightPane.value.style.width = "66vw"
       leftPane.value.style.width = "34vw"
     }
-    LRGrid.value = "3.5fr auto 6.5fr"
     setLTabDir("109px")
     UDGrid.value = "7fr auto 3fr"
+    if (rightTopBox.value && rightBottomBox.value) {
+      rightTopBox.value.style.height = "63vh"
+      CodeHeightVH.value = '58vh'  // 设置 Code 的尺寸
+      rightBottomBox.value.style.height = "27.5vh"
+    }
   }
 }
 // 双击 LeftPane Tabs 时扩展该盒子尺寸
 const getLeftIsResize = (isLeftResize: Ref<boolean>) => {
-  console.log("接受到 LeftLayout 传来的参数: " + isLeftResize.value)
+  // console.log("接受到 LeftLayout 传来的参数: " + isLeftResize.value)
   if (isLeftResize.value) {
     LRGrid.value = "20fr auto 1fr"
     if (rightPane.value && leftPane.value) {
@@ -200,17 +224,19 @@ const getLeftIsResize = (isLeftResize: Ref<boolean>) => {
 
 // 双击 CodeRun Tabs 时扩展该盒子尺寸
 const getRunIsResize = (isRunResize: Ref<string>) => {
-  console.log("接受到 CodeRun 传来的参数: " + isRunResize.value)
+  // console.log("接受到 CodeRun 传来的参数: " + isRunResize.value)
   if (isRunResize.value) {
     UDGrid.value = "1fr auto 17fr"
     if (rightTopBox.value && rightBottomBox.value) {
       rightTopBox.value.style.height = "48px"
+      CodeHeightVH.value = '11vh'  // 设置 Code 的尺寸
       rightBottomBox.value.style.height = "86vh"
     }
   }else {
     UDGrid.value = "7fr auto 3fr"
     if (rightTopBox.value && rightBottomBox.value) {
       rightTopBox.value.style.height = "63vh"
+      CodeHeightVH.value = '58vh'  // 设置 Code 的尺寸
       rightBottomBox.value.style.height = "27.5vh"
     }
   }
@@ -247,7 +273,7 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
   height: 100%;
   display: grid;
   grid-template-rows: v-bind(UDGrid); /* 初始 右侧上下面板 grid 布局比例 */
-  z-index: 2;
+
 
   min-width: 80px;
   max-height: 92vh;
@@ -272,6 +298,7 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
   margin: 0;
 
   min-height: 48px;
+  height: 100%;
 }
 
 .separator {

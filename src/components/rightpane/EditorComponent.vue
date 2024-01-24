@@ -5,7 +5,10 @@
         <t-icon name="code" class="tabs-icon-margin" />
         代码
       </template>
-      <CodeEditor></CodeEditor>
+      <div style="overflow:auto; height: 100%">
+        <CodeEditor></CodeEditor>
+      </div>
+
     </t-tab-panel>
     <t-tab-panel value="second">
       <template #label>
@@ -38,12 +41,30 @@ const emit = defineEmits(["on-dblclick"])
 const resize = (e) => {
   isResize.value = !isResize.value
   emit("on-dblclick", isResize)
-  console.log(isResize.value)
+  // console.log(isResize.value)
 }
 
 </script>
-<style scoped>
+<style>
 .tabs-icon-margin {
   margin-right: 4px;
+}
+
+.t-tabs__content {
+  overflow: auto;
+}
+.t-tab-panel {
+  overflow: auto;
+}
+.cm-content {
+  font-size: 16px;
+}
+
+.ͼ2 .cm-gutters {
+  background-color: white;
+  border: none;
+}
+.cm-editor ͼ1 ͼ2 ͼ4 ͼ4t {
+  overflow: auto;
 }
 </style>

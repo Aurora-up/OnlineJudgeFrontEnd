@@ -1,11 +1,10 @@
 <template>
-  <div>
     <div class="code-editor">
       <codemirror
         :phrases="phrases"
         v-model="code"
         placeholder="请输入你的代码..."
-        :style="{ height: '540px' }"
+        :style="{ }"
         :autofocus="true"
         :indent-with-tab="true"
         :tab-size="2"
@@ -13,13 +12,13 @@
         @change="console.log('change', $event)"
       />
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
-import { type Ref, ref } from 'vue'
+import { inject, type Ref, ref } from 'vue'
 import { Codemirror } from 'vue-codemirror'
 import { java } from '@codemirror/lang-java'
+import { dracula } from 'thememirror'
 
 const langName = ref('java')
 const langOptions = [
@@ -73,20 +72,15 @@ const phrases: Ref<Record<string, string>> = ref({
   Diagnostics: '诊断',
   'No diagnostics': '无诊断'
 })
+
+const CodeHeightVH = inject<Ref<string>>("CodeHeightVH");
+
+
 </script>
-<style>
+<style scoped>
 .code-editor {
   background-color: white;
-  min-height: 90%;
-  max-height: 92ch;
-}
-
-.cm-content {
-  font-size: 16px;
-}
-
-.ͼ2 .cm-gutters {
-  background-color: white;
-  border: none;
+  min-height: 100%;
+  height: v-bind(CodeHeightVH)
 }
 </style>

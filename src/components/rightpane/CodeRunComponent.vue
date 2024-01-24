@@ -138,7 +138,7 @@ const emit = defineEmits(["on-r-dblclick"])
 const resize = () => {
   isResize.value = !isResize.value
   emit("on-r-dblclick", isResize)
-  console.log(isResize.value)
+  // console.log(isResize.value)
 }
 
 </script>
@@ -154,7 +154,8 @@ const resize = () => {
 .runTab {
   display: flex;
   flex-wrap: wrap;
-
+  overflow: auto;
+  height: 100%;
 }
 .submitPane {
   margin: 10px;
