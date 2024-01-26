@@ -1,5 +1,5 @@
 <template>
-  <t-tabs :value="value" :placement="placement" @change="handlerChange" @dblclick="resize">
+  <t-tabs :value="tabItem" :placement="placement" @change="handlerChange" @dblclick="resize" :lazy="true">
     <t-tab-panel value="first">
       <template #label>
         <t-icon name="code" class="tabs-icon-margin" />
@@ -20,29 +20,35 @@
       </p>
     </t-tab-panel>
   </t-tabs>
+  <EditorConfigComponent :isDisplay="isDisplayCodeConfig2"></EditorConfigComponent>
 </template>
 <script setup lang="ts">
-import { inject, ref, type Ref } from 'vue'
+import { inject, provide, ref, type Ref } from 'vue'
 import CodeEditor from '@/components/rightpane/CodeEditor.vue'
+import EditorConfigComponent from '@/components/rightpane/EditorConfigComponent.vue'
 
 /* 获取 Tabs 位置 */
 const placement = inject<Ref<string>>("editorTabsPlacement")
 
-
 // 当前选中的 Tab
-const value = ref('first')
+const tabItem = ref('first')
+/* 控制切换选项卡时是否显示 Code Config ———— 发送给 EditorConfigComponent 组件 */
+const isDisplayCodeConfig2 = ref<boolean>(true);
 const handlerChange = (newValue:string) => {
-  value.value = newValue
+  tabItem.value = newValue
+  isDisplayCodeConfig2.value = tabItem.value == 'first';
 }
 
-// 是否重设尺寸 (用于双击某个 Tab 来将该 Tab 尺寸扩至限制的最大)
+/* 是否重设尺寸 (用于双击某个 Tab 来将该 Tab 尺寸扩至限制的最大或恢复初始布局) */
 const isResize =  ref<boolean>(false);
-const emit = defineEmits(["on-dblclick"])
-const resize = (e) => {
+const emit = defineEmits(["on-dblclick"])   // 将信号传给 QuestionView 组件
+const resize = (e :any) => {
   isResize.value = !isResize.value
   emit("on-dblclick", isResize)
   // console.log(isResize.value)
 }
+
+
 
 </script>
 <style>
@@ -56,15 +62,5 @@ const resize = (e) => {
 .t-tab-panel {
   overflow: auto;
 }
-.cm-content {
-  font-size: 16px;
-}
 
-.ͼ2 .cm-gutters {
-  background-color: white;
-  border: none;
-}
-.cm-editor ͼ1 ͼ2 ͼ4 ͼ4t {
-  overflow: auto;
-}
 </style>

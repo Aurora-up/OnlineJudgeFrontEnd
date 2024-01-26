@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import LayoutComponent from '@/components/LayoutComponent.vue'
+import LoginView from '@/views/LoginView.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -10,10 +11,34 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'question',
         name: 'Question',
-        component: () => import("@/views/QuestionView.vue")
+        component: () => import("@/views/QuestionView.vue"),
+      },
+      {
+        path: 'userinfo',
+        name: 'UserInfo',
+        component: () => import('@/views/UserInfoView.vue')
       }
     ]
   },
+  {
+    path: '/login',
+    name: "Login",
+    component: LoginView,
+    meta: {
+      title: "登录界面",
+      transition: "animate__backInLeft"
+    }
+  },
+  {
+    path: '/reg',
+    name: "Reg",
+    component: () => import('@/views/RegView.vue'),
+    meta: {
+      title: "注册界面",
+      transition: "animate__flipInX"
+    }
+  },
+
 ]
 
 

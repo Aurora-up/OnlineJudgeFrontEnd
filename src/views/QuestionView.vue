@@ -46,7 +46,7 @@ const rightBottomBox = ref<HTMLDivElement>()
 /* 是否发生了的拖拽 */
 const isResizing = ref(false)
 const isVerticalResizing = ref(false)
-/* 选项卡的位置设置 */
+/* 选项卡的位置设置 —— 拖拽某个盒子到极限时更改  Tabs 的显示方式来获得更好的页面布局响应性 */
 const questionTabsPlacement = ref<string>('top')
 const editorTabsPlacement = ref<string>('top')
 const TestRunTabsPlacement = ref<string>('top')
@@ -81,9 +81,13 @@ const UDMove = () => {
 }
 
 
-// 根据右侧面板宽度调整 Tabs 的位置
+/**
+ * 根据右侧面板宽度调整 Tabs 的位置
+ * @param rightPaneWith 右侧面板宽度
+ */
 const setRTabDir = (rightPaneWith:string) => {
-  if (parseInt(rightPaneWith, 10) <= 80) {
+  // 80px 是右侧面板的最小宽度
+  if (parseInt(rightPaneWith, 10) <= 80) {  // <= 80px 让右侧面板的 Tabs 靠右排列
     editorTabsPlacement.value = 'right'
     TestRunTabsPlacement.value = 'right'
   } else {
@@ -92,11 +96,19 @@ const setRTabDir = (rightPaneWith:string) => {
   }
 }
 
-// 根据左侧面板宽度调整 Tabs 的位置
+/**
+ * 根据左侧面板宽度调整 Tabs 的位置
+ * @param leftPaneWith 左侧面板宽度
+ */
 const setLTabDir = (leftPaneWith:string) => {
-  if (parseInt(leftPaneWith, 10) <= 108) questionTabsPlacement.value = 'left'
+  // 108px 是左侧面板的最小宽度
+  if (parseInt(leftPaneWith, 10) <= 108) questionTabsPlacement.value = 'left' // <= 80px 让左侧面板的 Tabs 靠左排列
   else questionTabsPlacement.value = 'top'
 }
+
+// 右侧面板拖拽至宽度很小时, 让 Code Config 隐藏掉
+const isDisplayCodeConfig = ref<boolean>(true);
+provide("isDisplayCodeConfig", isDisplayCodeConfig)
 
 /**
  * 左右拖拽逻辑
@@ -117,18 +129,24 @@ const handleMouseMove = (event: MouseEvent) => {
       const rightPaneWidth = totalWidth - leftPaneWidth - separatorRect.width
 
       // 设置左侧面板的宽度，限制在一定范围内
-      leftPane.value.style.width = `${Math.min(Math.max(leftPaneWidth, 108), containerRect.width - 108)}px`
+      leftPane.value.style.width = `${Math.min(Math.max(leftPaneWidth, 108), containerRect.width - 93)}px`
       setLTabDir(leftPane.value.style.width)
 
       // 设置右侧面板的宽度，同样限制在一定范围内
-      rightPane.value.style.width = `${Math.min(Math.max(rightPaneWidth, 80), containerRect.width - 80)}px`
+      rightPane.value.style.width = `${Math.min(Math.max(rightPaneWidth, 80), containerRect.width - 117)}px`
       setRTabDir(rightPane.value.style.width)
+      // 隐藏 Code Config
+      if (rightPane.value.style.width == '80px') isDisplayCodeConfig.value = false
+      else isDisplayCodeConfig.value = true
     }
   }
 }
 
-
-
+/**
+ * 由于 Code mirror 组件的原因，其高度无法根据外层容器的变化而变化, 故需要在上下拖拽时同步修改 Code mirror 的高度
+ */
+const CodeHeightVH = ref<string>('54.5vh')
+provide("CodeHeightVH", CodeHeightVH);
 
 /**
  * 上下拖拽逻辑
@@ -151,62 +169,75 @@ const handleVerticalMouseMove = (event: MouseEvent) => {
         let vh = window.innerHeight * 0.01
         const rightTopBoxVH = parseInt(rightTopBox.value.style.height, 10) / vh
         // console.log(rightTopBoxVH)
-        let codeVH = rightTopBoxVH - 5;
-        if (codeVH < 11) codeVH = 11
-        if (codeVH > 81) codeVH = 81;
+
+        /* 同步修改 Code mirror 组件的高度来获得更好的页面响应性 */
+        let codeVH = rightTopBoxVH - 8.5;
+        if (codeVH <= 11) codeVH = 11
+        if (codeVH > 77.5) codeVH = 77.5;
         // console.log(codeVH.toString() + "vh")
         CodeHeightVH.value = codeVH.toString() + "vh"
       }
     }
   }
 }
+
 /* 设定初始布局占比 */
 const LRGrid = ref<string>("3.5fr auto 6.5fr")
 const UDGrid = ref<string>("7fr auto 3fr")
 
-const CodeHeightVH = ref<string>('58vh')
-provide("CodeHeightVH", CodeHeightVH);
-
-// 双击 Editor Tabs 时扩展该盒子尺寸
+/**
+ * 双击 EditorComponent Tabs 时 "扩展" 该盒子尺寸 或 "重置" 为初始布局
+ * @param isEditorResize 在 EditorComponent 组件 @dblclick="resize" 事件中传来的参数
+ */
 const getCodeIsResize = (isEditorResize: Ref<boolean>) => {
-  // console.log("接受到 CodeEditor 传来的参数: " + isEditorResize.value)
+  // console.log("接受到 EditorComponent 传来的参数: " + isEditorResize.value)
   if (isEditorResize.value) {
+    // 若未 "拖拽" 直接设置 grip 布局即可 ———— 双击初始布局时触发
     LRGrid.value = "1fr auto 15fr"
+    // 拖拽后无法使用 grid 布局去设置, 故直接设置各自宽高 ———— 双击拖拽后布局触发
     if (leftPane.value && rightPane.value) {
       leftPane.value.style.width = "108px"
       rightPane.value.style.width = "92vw"
       setLTabDir("108px")
     }
-    //  双击初始布局时触发
+    /* 逻辑同上, 设置右侧上下盒子的布局 */
     UDGrid.value = "17fr auto 1fr"
-    /* 双击拖拽后布局触发 */
     if (rightTopBox.value && rightBottomBox.value) {
       rightTopBox.value.style.height = '86vh';
-      CodeHeightVH.value = '81vh'  // 设置 Code 的尺寸
+      CodeHeightVH.value = '77.5vh'                // 同步设置 Code 的尺寸
       rightBottomBox.value.style.height = '48px'
     }
-  }else {
+  }
+  // 再次双击重置为 初始布局
+  else {
     LRGrid.value = "3.5fr auto 6.5fr"
     if (leftPane.value && rightPane.value) {
-      rightPane.value.style.width = "66vw"
-      leftPane.value.style.width = "34vw"
+      rightPane.value.style.width = "65.5vw"
+      leftPane.value.style.width = "33vw"
     }
     setLTabDir("109px")
     UDGrid.value = "7fr auto 3fr"
     if (rightTopBox.value && rightBottomBox.value) {
       rightTopBox.value.style.height = "63vh"
-      CodeHeightVH.value = '58vh'  // 设置 Code 的尺寸
+      CodeHeightVH.value = '54.5vh'                 // 同步设置 Code 的尺寸
       rightBottomBox.value.style.height = "27.5vh"
     }
   }
 }
-// 双击 LeftPane Tabs 时扩展该盒子尺寸
+
+
+/**
+ *  双击 LeftLayout Tabs 时 "扩展" 该盒子尺寸 或 "重置" 为初始布局
+ * @param isLeftResize 在 LeftLayout 组件 @dblclick="resize" 事件中传来的参数
+ */
 const getLeftIsResize = (isLeftResize: Ref<boolean>) => {
   // console.log("接受到 LeftLayout 传来的参数: " + isLeftResize.value)
   if (isLeftResize.value) {
     LRGrid.value = "20fr auto 1fr"
     if (rightPane.value && leftPane.value) {
       rightPane.value.style.width = "80px"
+      if (rightPane.value.style.width == '80px') isDisplayCodeConfig.value = false   // 同步控制 Code Config 的显隐
+      else isDisplayCodeConfig.value = true
       leftPane.value.style.width = "93vw"
       setRTabDir("80px")
     }
@@ -214,7 +245,7 @@ const getLeftIsResize = (isLeftResize: Ref<boolean>) => {
   }else {
     LRGrid.value = "3.5fr auto 6.5fr"
     if (rightPane.value && leftPane.value) {
-      rightPane.value.style.width = "66vw"
+      rightPane.value.style.width = "64vw"
       leftPane.value.style.width = "34vw"
     }
     setRTabDir("81px")
@@ -222,9 +253,12 @@ const getLeftIsResize = (isLeftResize: Ref<boolean>) => {
   }
 }
 
-// 双击 CodeRun Tabs 时扩展该盒子尺寸
+/**
+ * 双击 CodeRunComponent Tabs 时 "扩展" 该盒子尺寸 或 "重置" 为初始布局
+ * @param isRunResize 在 CodeRunComponent 组件 @dblclick="resize" 事件中传来的参数
+ */
 const getRunIsResize = (isRunResize: Ref<string>) => {
-  // console.log("接受到 CodeRun 传来的参数: " + isRunResize.value)
+  // console.log("接受到 CodeRunComponent 传来的参数: " + isRunResize.value)
   if (isRunResize.value) {
     UDGrid.value = "1fr auto 17fr"
     if (rightTopBox.value && rightBottomBox.value) {
@@ -236,7 +270,7 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
     UDGrid.value = "7fr auto 3fr"
     if (rightTopBox.value && rightBottomBox.value) {
       rightTopBox.value.style.height = "63vh"
-      CodeHeightVH.value = '58vh'  // 设置 Code 的尺寸
+      CodeHeightVH.value = '54.5vh'  // 设置 Code 的尺寸
       rightBottomBox.value.style.height = "27.5vh"
     }
   }
@@ -265,6 +299,7 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
   background-color: #ffffff;
   border-radius: 8px;
   margin: 0;
+  max-height: 94vh;
   min-width: 108px; /* 最小宽度 */
 }
 
