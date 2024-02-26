@@ -7,7 +7,7 @@
 
     <t-card
       :bordered="false"
-      :hover-shadow="true"
+      :shadow="true"
       :style="{ width: '400px', height: '530px', zIndex: '1' }"
     >
       <t-space direction="vertical" size="15px">

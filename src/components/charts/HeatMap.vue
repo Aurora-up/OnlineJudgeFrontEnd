@@ -1,8 +1,8 @@
 <template>
   <div class="hmp-contain">
     <div id="ex-ghDay" class="hmp-main"></div>
-    <a class="link mr" href="#" @click="toPre"> ← 上一年 </a>
-    <a class="link" href="#" @click="toNext"> 下一年 → </a>
+    <a class="link mr" href="#" @click="toPre">←</a>
+    <a class="link" href="#" @click="toNext">→</a>
     <div style="float: right; font-size: 12px">
       <span style="color: #768390">Less</span>
       <div id="ex-ghDay-legend" style="display: inline-block; margin: 0 4px"></div>
@@ -17,7 +17,7 @@ import 'cal-heatmap/cal-heatmap.css'
 import LegendLite from 'cal-heatmap/plugins/LegendLite'
 import Tooltip from 'cal-heatmap/plugins/Tooltip'
 import CalendarLabel from 'cal-heatmap/plugins/CalendarLabel'
-import hmpData from '@/module/heat_map_fake_data/HmpData'
+import { hmpData } from '@/module/heat_map_fake_data/data.json'
 
 const cal = new CalHeatmap()
 
@@ -26,7 +26,7 @@ cal.paint(
     data: {
       source: hmpData,
       x: 'date',
-      y: d => +d['value'],
+      y: (d) => +d['value'],
       groupY: 'max'
     },
     date: { start: new Date('2023-01-01') },
@@ -52,10 +52,9 @@ cal.paint(
       {
         text: function (date, value, dayjsDate) {
           if (value) {
-            return dayjsDate.format('YYYY.MM.DD') + " 你刷了" + value + "道题"
-          }
-          else {
-            return dayjsDate.format('YYYY.MM.DD') + ", 今天没有刷题"
+            return dayjsDate.format('YYYY.MM.DD') + ' 你刷了' + value + '道题'
+          } else {
+            return dayjsDate.format('YYYY.MM.DD') + ', 今天没有刷题'
           }
         }
       }
@@ -85,11 +84,11 @@ cal.paint(
 
 const toPre = (e) => {
   e.preventDefault()
-  cal.previous(12)
+  cal.previous(1)
 }
 const toNext = (e) => {
   e.preventDefault()
-  cal.next(12)
+  cal.next(1)
 }
 </script>
 

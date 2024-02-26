@@ -6,7 +6,7 @@
         代码
       </template>
       <div style="overflow:auto; height: 100%">
-        <CodeEditor></CodeEditor>
+        <MonacoCodeEditor></MonacoCodeEditor>
       </div>
 
     </t-tab-panel>
@@ -26,9 +26,12 @@
 import { inject, provide, ref, type Ref } from 'vue'
 import CodeEditor from '@/components/rightpane/CodeEditor.vue'
 import EditorConfigComponent from '@/components/rightpane/EditorConfigComponent.vue'
+import MonacoCodeEditor from '@/components/rightpane/MonacoCodeEditor.vue'
 
 /* 获取 Tabs 位置 */
 const placement = inject<Ref<string>>("editorTabsPlacement")
+
+
 
 // 当前选中的 Tab
 const tabItem = ref('first')
@@ -39,16 +42,14 @@ const handlerChange = (newValue:string) => {
   isDisplayCodeConfig2.value = tabItem.value == 'first';
 }
 
+
 /* 是否重设尺寸 (用于双击某个 Tab 来将该 Tab 尺寸扩至限制的最大或恢复初始布局) */
 const isResize =  ref<boolean>(false);
 const emit = defineEmits(["on-dblclick"])   // 将信号传给 QuestionView 组件
 const resize = (e :any) => {
   isResize.value = !isResize.value
   emit("on-dblclick", isResize)
-  // console.log(isResize.value)
 }
-
-
 
 </script>
 <style>

@@ -20,13 +20,14 @@ import { java } from '@codemirror/lang-java'
 import { cpp } from '@codemirror/lang-cpp'
 import { rust } from '@codemirror/lang-rust'
 
+
 // 默认的代码模版
 const codeTemplate = [
   {
     name: 'java',
     lang: java(),
     template: `public class Main{
-  public void static main(String arg) {
+  public static void main(String[] args) {
 
   }
 }`
@@ -62,6 +63,7 @@ const extensions = computed(() => {
       }
     })
   }
+
   return result
 })
 
@@ -111,10 +113,10 @@ const phrases: Ref<Record<string, string>> = ref({
 /* 接收来自 QuestionView 中 "拖拽" 或 "双击" 后同步 Code mirror 组件高度的设置 */
 const CodeHeightVH = inject<Ref<string>>('CodeHeightVH')
 
-const currentLang = ref<string>('java')
-const currentFontSize = ref<string>('16px')
-const currentTabSize = ref<number>(2)
-const isRecoverCodeTemplate = ref<boolean>(false)
+const currentLang = ref<string>('rust')
+const currentFontSize = ref<number>(14)
+const currentTabSize = ref<number>(4)
+const currentCodeTheme = ref<string>('hc-light')
 
 /* 组件初始话时先去 Local Store 中加载有无对应的 code config, 防止刷新页面后失去当前配置 */
 onMounted(() => {
@@ -124,33 +126,26 @@ onMounted(() => {
     currentLang.value = configData.lang
     currentFontSize.value = configData.fontSize
     currentTabSize.value = configData.tabSize
+    currentCodeTheme.value = configData.theme
   }
 })
 
 const currentComponentInstance = getCurrentInstance()
 currentComponentInstance?.proxy?.$Bus.on('on-editor-config', (configs: any) => {
-  currentLang.value = configs[0].value ?? 'java'
-  currentFontSize.value = configs[1].value ?? '16px'
-  currentTabSize.value = configs[2].value ?? 2
-  isRecoverCodeTemplate.value = configs[3].value ?? false
+  currentLang.value = configs[0].value ?? 'rust'
+  currentFontSize.value = configs[1].value ?? 14
+  currentTabSize.value = configs[2].value ?? 4
+  currentCodeTheme.value = configs[3].value ?? 'hc-light'
   // 拿到对应的设置后先写入 Local Store , 防止刷新页面后失去当前配置
   localStorage.setItem(
     'code-config',
     JSON.stringify({
       lang: currentLang.value,
       fontSize: currentFontSize.value,
-      tabSize: currentTabSize.value
+      tabSize: currentTabSize.value,
+      theme: currentCodeTheme.value
     })
   )
-  // console.log(currentLang.value, currentFontSize.value, currentTabSize.value, isRecoverCodeTemplate.value)
-  // 若重置了当前代码, 则去匹配对应的代码模版
-  if (isRecoverCodeTemplate.value) {
-    codeTemplate.forEach((item) => {
-      if (item.name == currentLang.value) {
-        code.value = item.template
-      }
-    })
-  }
 })
 </script>
 <style>

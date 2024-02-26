@@ -1,38 +1,46 @@
 <template>
-  <t-head-menu v-model="menuValue" theme="light" @change="changeHandler" style="width: 100vw">
-    <template #logo>
-      <img height="40" src="../assets/logo.png" alt="logo" />
-    </template>
-
-    <t-menu-item value="item1" @click="toQuestion"> 题库</t-menu-item>
-
-    <div class="user-info" @click="toUserInfo">
-      <img src="../assets/user.jpg" class="user-img" alt="H" />
+  <div class="menu-er-contain">
+    <div style="width: 70%">
+      <t-head-menu v-model="menuValue" theme="light" @change="changeHandler" class="t-head-menu">
+        <template #logo>
+          <img height="40" src="../assets/logo.png" alt="logo" />
+        </template>
+        <t-menu-item value="problem" @click="toMenuItem('Repository')"> 题库</t-menu-item>
+        <t-menu-item value="share" @click="toMenuItem('Share')"> 分享</t-menu-item>
+        <t-menu-item value="ai" @click="toMenuItem"> AI</t-menu-item>
+        <t-menu-item value="create-problem" @click="toMenuItem('CreateProblem')"> 创建题目</t-menu-item>
+        <template #operations>
+          <div class="user-info" @click="toMenuItem('UserInfo')">
+            <img src="../assets/user.jpg" class="user-img" alt="H" />
+          </div>
+        </template>
+      </t-head-menu>
     </div>
-  </t-head-menu>
+  </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-const menuValue = ref('')
+const menuValue = ref('problem')
 
-const changeHandler = (active) => {
+const changeHandler = (active:any) => {
   console.log('change', active)
 }
 
 const router = useRouter()
-const toQuestion = () => {
+const route = useRoute()
+const toMenuItem = (routerName: string) => {
   router.push({
-    name: 'Question'
+    name: routerName
   })
 }
-const toUserInfo = () => {
-  router.push({
-    name: 'UserInfo'
-  })
-}
+// 刷新后保持菜单栏状态
+onMounted(() => {
+  menuValue.value = route.path.split('/')[1]
+})
+
 </script>
 
 <style lang="less" scoped>
@@ -54,15 +62,27 @@ const toUserInfo = () => {
   }
 }
 
+.menu-er-contain {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .user-info {
   border-radius: 50%;
   width: 40px;
   height: 40px;
+  margin-right: 30px;
 }
 
 .user-img {
   width: 40px;
   height: 40px;
   cursor: pointer;
+}
+
+.nav-contain {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 </style>

@@ -33,7 +33,7 @@
 
          </div>
          <div class="tdesign-demo-block" v-show="testing || runing" >
-           <t-steps :current="current" readonly="true" status="process">
+           <t-steps :current="current" :readonly="true" status="process">
              <t-step-item title="提交" :content="submitContent" />
              <t-step-item title="编译" :content="compileContent" />
              <t-step-item title="运行" :content="runContent" />
@@ -61,7 +61,7 @@ const TabValue = ref('first');
 
 
 const TestValue = ref('');
-const getTestValue = (value:string, e) => {
+const getTestValue = (value:string, e: any) => {
   console.log('输入的测试用例为: ', value);
 };
 

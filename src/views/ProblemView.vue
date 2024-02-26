@@ -34,6 +34,11 @@ import { provide, type Ref, ref } from 'vue'
 import CodeRunComponent from '@/components/rightpane/CodeRunComponent.vue'
 import LeftLayout from '@/components/leftpane/LeftLayout.vue'
 import EditorComponent from '@/components/rightpane/EditorComponent.vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+provide("PId", route.params.PId);
+
 
 /* 获取两个拖拽条 */
 const separator = ref<HTMLDivElement>()
@@ -110,6 +115,15 @@ const setLTabDir = (leftPaneWith:string) => {
 const isDisplayCodeConfig = ref<boolean>(true);
 provide("isDisplayCodeConfig", isDisplayCodeConfig)
 
+
+/**
+ * 由于 Code mirror 组件的原因，其高度无法根据外层容器的变化而变化, 故需要在上下拖拽时同步修改 Code mirror 的高度
+ */
+const CodeHeightVH = ref<string>('54.5vh')
+provide("CodeHeightVH", CodeHeightVH);
+const codeWidthIsChange = ref<boolean>(false);
+provide("codeWidthIsChange", codeWidthIsChange);
+
 /**
  * 左右拖拽逻辑
  * 该方法用于处理左右拖拽的逻辑，根据拖拽的位置调整左右两个面板的宽度，并根据宽度调整相关布局。
@@ -135,6 +149,9 @@ const handleMouseMove = (event: MouseEvent) => {
       // 设置右侧面板的宽度，同样限制在一定范围内
       rightPane.value.style.width = `${Math.min(Math.max(rightPaneWidth, 80), containerRect.width - 117)}px`
       setRTabDir(rightPane.value.style.width)
+
+      codeWidthIsChange.value = !codeWidthIsChange.value;
+
       // 隐藏 Code Config
       if (rightPane.value.style.width == '80px') isDisplayCodeConfig.value = false
       else isDisplayCodeConfig.value = true
@@ -142,11 +159,7 @@ const handleMouseMove = (event: MouseEvent) => {
   }
 }
 
-/**
- * 由于 Code mirror 组件的原因，其高度无法根据外层容器的变化而变化, 故需要在上下拖拽时同步修改 Code mirror 的高度
- */
-const CodeHeightVH = ref<string>('54.5vh')
-provide("CodeHeightVH", CodeHeightVH);
+
 
 /**
  * 上下拖拽逻辑
@@ -218,7 +231,7 @@ const getCodeIsResize = (isEditorResize: Ref<boolean>) => {
     setLTabDir("109px")
     UDGrid.value = "7fr auto 3fr"
     if (rightTopBox.value && rightBottomBox.value) {
-      rightTopBox.value.style.height = "63vh"
+      rightTopBox.value.style.height = "64.5vh"
       CodeHeightVH.value = '54.5vh'                 // 同步设置 Code 的尺寸
       rightBottomBox.value.style.height = "27.5vh"
     }
@@ -236,17 +249,21 @@ const getLeftIsResize = (isLeftResize: Ref<boolean>) => {
     LRGrid.value = "20fr auto 1fr"
     if (rightPane.value && leftPane.value) {
       rightPane.value.style.width = "80px"
+      codeWidthIsChange.value = !codeWidthIsChange.value;
+      // console.log(rightPane.value.style.width)
       if (rightPane.value.style.width == '80px') isDisplayCodeConfig.value = false   // 同步控制 Code Config 的显隐
       else isDisplayCodeConfig.value = true
-      leftPane.value.style.width = "93vw"
+      leftPane.value.style.width = "94vw"
       setRTabDir("80px")
     }
     UDGrid.value = "17fr auto 1fr"
   }else {
     LRGrid.value = "3.5fr auto 6.5fr"
-    if (rightPane.value && leftPane.value) {
-      rightPane.value.style.width = "64vw"
+    if (rightPane.value && leftPane.value && rightTopBox.value) {
+      codeWidthIsChange.value = !codeWidthIsChange.value;
+      rightPane.value.style.width = "65vw"
       leftPane.value.style.width = "34vw"
+      if (rightPane.value.style.width == '65vw') isDisplayCodeConfig.value = true   // 同步控制 Code Config 的显隐
     }
     setRTabDir("81px")
     UDGrid.value = "7fr auto 3fr"
@@ -269,7 +286,7 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
   }else {
     UDGrid.value = "7fr auto 3fr"
     if (rightTopBox.value && rightBottomBox.value) {
-      rightTopBox.value.style.height = "63vh"
+      rightTopBox.value.style.height = "64.5vh"
       CodeHeightVH.value = '54.5vh'  // 设置 Code 的尺寸
       rightBottomBox.value.style.height = "27.5vh"
     }
@@ -283,7 +300,7 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
   height: 100%;
   margin: 0;
   overflow: hidden;
-  background-color: #f0f0f0; /* 页面背景色为浅灰色 */
+  background-color: #F0F0F0; /* 页面背景色为浅灰色 */
 }
 
 #container {
@@ -308,10 +325,9 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
   height: 100%;
   display: grid;
   grid-template-rows: v-bind(UDGrid); /* 初始 右侧上下面板 grid 布局比例 */
-
-
   min-width: 80px;
   max-height: 92vh;
+
 }
 
 .right-top-box {

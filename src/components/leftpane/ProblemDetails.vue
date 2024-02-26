@@ -1,6 +1,6 @@
 <template>
 <div class="qDetails" >
-  <div style="margin-left: 20px;"><h2>{{QId}}. {{QName}}</h2></div>
+  <div style="margin-left: 20px;"><h2>{{ PID }}. {{ QName }}</h2></div>
   <div style="margin-left: 20px;">
     <t-tag theme="success" variant="outline" shape="round">{{Tag1}}</t-tag>
     <t-space :key="index" v-for="(item, index) in Tag2" style="margin-left: 10px">
@@ -15,11 +15,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { MdPreview, MdCatalog } from 'md-editor-v3';
+import { inject, onMounted, ref } from 'vue'
+import { MdPreview } from 'md-editor-v3';
 import 'md-editor-v3/lib/preview.css';
 
-const QId = ref<number>(1)
+const PId = inject<number>("PId")
+onMounted(()=>{
+  PID.value = PId ?? 0
+})
+
+const PID = ref<number>(1)
 const QName = ref<string>('A + B')
 
 const QDescribe = ref<string>("输入两个整数，求这两个整数的和是多少。")

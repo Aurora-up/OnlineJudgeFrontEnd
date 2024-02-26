@@ -1,5 +1,5 @@
 <template>
-  <div class="codeConfig" v-show="isDisplayCodeConfig && isDisplay">
+  <div class="codeConfig" v-show="(isDisplayCodeConfig && isDisplay)">
     <div style="flex-grow: 1"></div>
     <t-select-input
       :value="currentLang"
@@ -45,7 +45,7 @@
           label="字体大小"
           :value="currentFontSize"
           :popup-visible="FSVisible"
-          placeholder="lang"
+          placeholder=""
           auto-width
           borderless
           @popup-visible-change="FSonPopupVisibleChange"
@@ -55,7 +55,7 @@
               <li
                 v-for="(item, index) in fontSizeOptions"
                 :key="index"
-                @click="() => FSonOptionClick(String(item))"
+                @click="() => FSonOptionClick(item)"
               >
                 {{ item }}
               </li>
@@ -66,12 +66,13 @@
           </template>
         </t-select-input>
 
+        <!--   Monaco Editor Tab 长度设置     -->
         <t-select-input
           label="Tab长度"
           suffix="个空格"
           :value="currentTabSize"
           :popup-visible="TSVisible"
-          placeholder="lang"
+          placeholder=""
           auto-width
           borderless
           @popup-visible-change="TSonPopupVisibleChange"
@@ -92,11 +93,39 @@
             <chevron-down-icon />
           </template>
         </t-select-input>
+
+        <t-select-input
+          label="主题"
+          :value="currentEditorTheme"
+          :popup-visible="ThemeOptionsVisible"
+          placeholder=""
+          auto-width
+          borderless
+          @popup-visible-change="ThemeOptionsonPopupVisibleChange"
+          style="margin-top: 10px"
+        >
+
+          <template #panel>
+            <ul class="tdesign-demo__select-input-ul-auto-width">
+              <li
+                v-for="(item, index) in themeOptions"
+                :key="index"
+                @click="() => ThemeOptionsOnOptionClick(item)"
+              >
+                {{ item }}
+              </li>
+            </ul>
+          </template>
+          <template #suffixIcon>
+            <chevron-down-icon />
+          </template>
+        </t-select-input>
+
       </t-dialog>
     </div>
     <div style="margin-left: 5px; margin-right: 5px">
-      <t-popup content="还原到默认的代码模版" placement="bottom" trigger="hover">
-        <t-button theme="default" variant="base" @click="recover">
+      <t-popup content="代码格式化" placement="bottom" trigger="hover">
+        <t-button theme="default" variant="base">
           <RollfrontIcon />
         </t-button>
       </t-popup>
@@ -108,26 +137,27 @@ import { ref, getCurrentInstance, onMounted, inject, type Ref } from 'vue'
 import { ChevronDownIcon, Setting1Icon, RollfrontIcon } from 'tdesign-icons-vue-next'
 
 // 设置当前使用语言
-const langOptions: string[] = ['java', 'cpp', 'rust']
-const currentLang = ref<string>('java')
+const langOptions: string[] = ['c','cpp','rust','java','python']
+const currentLang = ref<string>('rust')
 const popupVisible = ref(false)
 const onLangOptionClick = (item: string) => {
   currentLang.value = item
   emit() // 选择不同语言时, 传送当前信息给 CodeEditor 组件
   // 选中后立即关闭浮层
   popupVisible.value = false
-  // console.log(currentLang.value)
 }
 const onPopupVisibleChange = (val: boolean) => {
   popupVisible.value = val
 }
 const visibleCenter = ref(false)
 
-/* 设置当前字体 */
-const fontSizeOptions: string[] = ['14px', '16px', '18px', '20px']
-const currentFontSize = ref<string>('16px')
+
+
+/* 设置当前字体大小 */
+const fontSizeOptions: number[] = [14, 16, 18, 20]
+const currentFontSize = ref<number>(14)
 const FSVisible = ref(false)
-const FSonOptionClick = (item: string) => {
+const FSonOptionClick = (item: number) => {
   currentFontSize.value = item
   // 选中后立即关闭浮层
   FSVisible.value = false
@@ -136,9 +166,11 @@ const FSonPopupVisibleChange = (val: boolean) => {
   FSVisible.value = val
 }
 
+
+
 /* 设置当前 Tab 所占空格数 */
 const tabSizeOptions: number[] = [2, 4]
-const currentTabSize = ref<number>(2)
+const currentTabSize = ref<number>(4)
 const TSVisible = ref(false)
 const TSonOptionClick = (item: number) => {
   currentTabSize.value = item
@@ -149,7 +181,23 @@ const TSonPopupVisibleChange = (val: boolean) => {
   TSVisible.value = val
 }
 
-/* 弹出的对话框的确实和取消 */
+
+
+/* 设置当前 Monaco Editor 主题 */
+const themeOptions: string[] = ['vs', 'vs-dark', 'hc-light', 'hc-black']
+const currentEditorTheme = ref<string>("hc-light")
+const ThemeOptionsVisible = ref(false)
+const ThemeOptionsOnOptionClick = (item: string) => {
+  currentEditorTheme.value = item
+  // 选中后立即关闭浮层
+  ThemeOptionsVisible.value = false
+}
+const ThemeOptionsonPopupVisibleChange = (val: boolean) => {
+  ThemeOptionsVisible.value = val
+}
+
+
+/* 弹出的 monacoEditor 设置对话框的确实和取消 */
 const configConfirm = () => {
   // 确认
   visibleCenter.value = false
@@ -160,21 +208,16 @@ const configNo = () => {
   visibleCenter.value = false
 }
 
-/* 重置当前代码模版设置 */
-const isRecoverCodeTemplate = ref<boolean>(false)
-const recover = () => {
-  isRecoverCodeTemplate.value = true
-  emit()
-}
 
-/* 将 Code Config 传给 CodeEditor 组件 */
+
+/* 将 Editor Config 传给 MonacoCodeEditor 组件 */
 const currentComponentInstance = getCurrentInstance()
 const emit = () => {
   currentComponentInstance?.proxy?.$Bus.emit('on-editor-config', [
     currentLang,
     currentFontSize,
     currentTabSize,
-    isRecoverCodeTemplate
+    currentEditorTheme
   ])
 }
 
@@ -186,6 +229,7 @@ onMounted(() => {
     currentLang.value = configData.lang
     currentFontSize.value = configData.fontSize
     currentTabSize.value = configData.tabSize
+    currentEditorTheme.value = configData.theme
   }
 })
 
@@ -194,6 +238,8 @@ const isDisplayCodeConfig = inject<Ref<boolean>>('isDisplayCodeConfig')
 
 /* 控制切换选项卡时是否显示 Code Config ———— 接收 EditorComponent 组件传来的信号 */
 const props = defineProps<{ isDisplay: boolean }>()
+
+
 </script>
 <style scoped>
 .tdesign-demo__select-input-ul-auto-width {
@@ -233,6 +279,6 @@ const props = defineProps<{ isDisplay: boolean }>()
 
 .langSelect {
   width: 50px;
-  margin-right: 25px;
+  margin-right: 37px;
 }
 </style>

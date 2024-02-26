@@ -34,7 +34,7 @@ const option = ref({
     trigger: 'item'
   },
   legend: {
-    top: '85%',
+    top: '89%',
     left: 'center'
   },
   series: [

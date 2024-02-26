@@ -17,13 +17,14 @@
 
 <script setup lang="ts">
 import NavComponent from '@/components/NavComponent.vue'
+import FooterComponent from '@/components/FooterComponent.vue'
 
 
 </script>
 
 <style scoped>
 .content {
-  height: 93vh;
+  height: 94vh;
   background-color: #ffffff;
   overflow: hidden;
 }

@@ -5,6 +5,8 @@ import router from './router'
 import TDesign from 'tdesign-vue-next';
 import 'tdesign-vue-next/es/style/index.css';
 import mitt from 'mitt'
+import VCalendar from 'v-calendar';
+import 'v-calendar/style.css';
 
 // 通用字体
 import 'vfonts/Lato.css'
@@ -21,9 +23,9 @@ declare module "vue" {
 
 
 const app = createApp(App)
-
 app.config.globalProperties.$Bus = Mit
 
+app.use(VCalendar, {})
 app.use(TDesign)
 app.use(createPinia())
 app.use(router)

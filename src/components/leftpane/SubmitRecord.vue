@@ -9,21 +9,33 @@
           <t-tag :theme="item.state" variant="light" size="large">{{item.desc}}</t-tag>
         </t-space>
       </template>
-      <div style="overflow: auto">
-<!--        <n-code :code="item.code" show-line-numbers />-->
+      <div style="overflow: auto" class="submit-code-contain">
+        <t-space style="margin-bottom: 15px">
+          通过了: {{item.acceptData}}/10 个数据
+          <t-divider layout="vertical" />
+          运行时间: {{item.runningTime}}
+          <t-divider layout="vertical" />
+          运行空间: {{item.runningSpace}}
+        </t-space>
+<!--          <n-code :code="item.code" show-line-numbers  />-->
         <MdPreview  previewTheme="github" editorId="preview-only" :modelValue="prefix + item.lang + '\n' + item.code + postfix" />
       </div>
     </t-collapse-panel>
-
-
-
   </t-collapse>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { NCode } from 'naive-ui'
+import { inject, onMounted, ref } from 'vue'
 import { MdPreview } from 'md-editor-v3'
+
+const PID = ref<number>(0)
+const PId = inject<number>("PId")
+onMounted(() => {
+  PID.value = PId ?? 0
+})
+
+
+
 
 const prefix = "```"
 const postfix = "\n```"
@@ -32,12 +44,15 @@ const postfix = "\n```"
 const submitData = [
   {
     time: '2024.1.25 15:12:44',
+    runningTime: '13ms',
+    runningSpace: '216KB',
+    acceptData: 10,
     lang: 'java',
     state: "success",
     desc: 'AC',
     code: `import java.io.*;
 public class Main{
-  public void static main(String arg) {
+  public static void main(String[] args) throws IOException{
     var in = new BufferedReader(new InputStreamReader(System.in));
     var out = new PrintWriter(new OutputStreamWriter(System.out));
     String[] str1 = in.readLine().split(" ");
@@ -53,6 +68,9 @@ public class Main{
   {
     time: '2024.1.25 15:02:32',
     lang: 'java',
+    runningTime: '1400ms',
+    runningSpace: '2MB',
+    acceptData: 7,
     state: "warning",
     desc: 'TimeOut',
     code: `import java.util.Scanner;
@@ -71,10 +89,13 @@ public class Main {
   {
     time: '2024.1.25 15:00:01',
     lang: 'java',
+    runningTime: 'N/A',
+    runningSpace: 'N/A',
+    acceptData: 0,
     state: "danger",
     desc: "Error",
     code: `public class Main{
-  public void static main(String arg) {
+  public static void main(String[] args) {
 
   }
 }`,
@@ -90,3 +111,9 @@ public class Main {
 
 
 </script>
+
+<style scoped>
+.submit-code-contain {
+  background-color: #f2f2f2;
+}
+</style>

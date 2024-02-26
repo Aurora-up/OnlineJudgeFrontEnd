@@ -7,7 +7,7 @@
 
     <t-card
       :bordered="false"
-      :hover-shadow="true"
+      :shadow="true"
       :style="{ width: '400px', height: '530px', zIndex: '1' }"
     >
       <t-space direction="vertical" size="15px">
@@ -128,7 +128,7 @@ const checkLogin = () => {
   // 2. 模拟登录
   if (userNameValue.value == "admin" && passwordValue.value == "123456") {
     router.replace({
-      name: 'Question'
+      name: 'Repository'
     })
   }
 }
@@ -137,7 +137,7 @@ const checkLogin = () => {
 // 去注册
 const toReg = () => {
   router.push({
-    name: "Reg"
+    name: "Register"
   })
 }
 
