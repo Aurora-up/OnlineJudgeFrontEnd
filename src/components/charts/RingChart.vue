@@ -57,6 +57,10 @@ const gaugeData = [
     }
   }
 ]
+
+// Calculate total sum of values
+const totalSum = gaugeData.reduce((acc, cur) => acc + cur.value, 0)
+
 const option = ref({
   title: {
     text: '解题数量',
@@ -116,8 +120,42 @@ const option = ref({
         borderRadius: 20,
         formatter: '{value}道'
       }
+    },
+    // 添加额外的环
+    {
+      type: 'gauge',
+      startAngle: 90,
+      endAngle: -270,
+      center: ['50%', '60%'],
+      radius: '40%', // 控制环的大小
+      axisLine: {
+        show: false
+      },
+      axisTick: {
+        show: false
+      },
+      splitLine: {
+        show: false
+      },
+      pointer: {
+        show: false
+      },
+      axisLabel: {
+        show: false
+      },
+      detail: {
+        show: false
+      },
+      data: [{ name: `${totalSum}` }], // 文本值为总和
+      title: {
+        show: true,
+        offsetCenter: [0, '-20'], // 调整文本位置
+        fontSize: 24,
+        color: '#333', // 文本颜色
+        fontWeight: 'bold',
+      }
     }
-  ]
+  ],
 })
 </script>
 

@@ -6,7 +6,9 @@
         代码
       </template>
       <div style="overflow:auto; height: 100%">
-        <MonacoCodeEditor></MonacoCodeEditor>
+        <keep-alive>
+          <MonacoCodeEditor></MonacoCodeEditor>
+        </keep-alive>
       </div>
 
     </t-tab-panel>
@@ -23,8 +25,7 @@
   <EditorConfigComponent :isDisplay="isDisplayCodeConfig2"></EditorConfigComponent>
 </template>
 <script setup lang="ts">
-import { inject, provide, ref, type Ref } from 'vue'
-import CodeEditor from '@/components/rightpane/CodeEditor.vue'
+import { inject, ref, type Ref } from 'vue'
 import EditorConfigComponent from '@/components/rightpane/EditorConfigComponent.vue'
 import MonacoCodeEditor from '@/components/rightpane/MonacoCodeEditor.vue'
 

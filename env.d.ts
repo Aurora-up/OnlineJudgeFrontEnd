@@ -11,15 +11,6 @@ declare module 'monaco-editor/esm/vs/basic-languages/javascript/javascript.js'
 
 
 declare module 'monaco-editor/esm/vs/basic-languages/java/java.js';
-declare module 'monaco-editor/esm/vs/language/java/java.worker?worker';
-
 declare module 'monaco-editor/esm/vs/basic-languages/cpp/cpp.js';
-declare module 'monaco-editor/esm/vs/language/cpp/cpp.worker?worker';
-
-
 declare module 'monaco-editor/esm/vs/basic-languages/python/python.js';
-declare module 'monaco-editor/esm/vs/language/python/python.worker?worker';
-
-
 declare module 'monaco-editor/esm/vs/basic-languages/rust/rust.js';
-declare module 'monaco-editor/esm/vs/language/rust/rust.worker?worker'

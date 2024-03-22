@@ -13,9 +13,9 @@
         <t-space style="margin-bottom: 15px">
           通过了: {{item.acceptData}}/10 个数据
           <t-divider layout="vertical" />
-          运行时间: {{item.runningTime}}
+          运行总时间: {{item.runningTime}}
           <t-divider layout="vertical" />
-          运行空间: {{item.runningSpace}}
+          峰值内存占用: {{item.runningSpace}}
         </t-space>
 <!--          <n-code :code="item.code" show-line-numbers  />-->
         <MdPreview  previewTheme="github" editorId="preview-only" :modelValue="prefix + item.lang + '\n' + item.code + postfix" />
@@ -49,7 +49,7 @@ const submitData = [
     acceptData: 10,
     lang: 'java',
     state: "success",
-    desc: 'AC',
+    desc: 'Accept',
     code: `import java.io.*;
 public class Main{
   public static void main(String[] args) throws IOException{
@@ -72,7 +72,7 @@ public class Main{
     runningSpace: '2MB',
     acceptData: 7,
     state: "warning",
-    desc: 'TimeOut',
+    desc: 'Time Limit Exceeded',
     code: `import java.util.Scanner;
 public class Main {
   public static void main(String[] args) {
@@ -87,14 +87,98 @@ public class Main {
 `,
   },
   {
+    time: '2024.1.25 15:02:32',
+    lang: 'java',
+    runningTime: '1400ms',
+    runningSpace: '2MB',
+    acceptData: 7,
+    state: "warning",
+    desc: 'Memory Limit Exceeded',
+    code: `import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Main {
+  public static void main(String[] args) {
+    List<byte[]> memoryList = new ArrayList<>();
+    // 无限分配
+      while (true) {
+        byte[] memoryChunk = new byte[1024 * 1024];
+        memoryList.add(memoryChunk);
+      }
+  }
+}
+`,
+  },
+  {
+    time: '2024.1.25 15:21:44',
+    runningTime: '13ms',
+    runningSpace: '216KB',
+    acceptData: 10,
+    lang: 'java',
+    state: "warning",
+    desc: 'Presentation Error',
+    code: `import java.io.*;
+public class Main{
+  public static void main(String[] args) throws IOException{
+    var in = new BufferedReader(new InputStreamReader(System.in));
+    var out = new PrintWriter(new OutputStreamWriter(System.out));
+    String[] str1 = in.readLine().split(" ");
+    int a = Integer.parseInt(str1[0]);
+    int b = Integer.parseInt(str1[1]);
+    out.print(a + '\n' + b);
+    out.flush();
+    out.close();
+    in.close();
+  }
+}`
+  },
+  {
+    time: '2024.1.25 15:19:44',
+    runningTime: '13ms',
+    runningSpace: '216KB',
+    acceptData: 10,
+    lang: 'java',
+    state: "danger",
+    desc: 'Wrong Answer',
+    code: `import java.io.*;
+public class Main{
+  public static void main(String[] args) throws IOException{
+    var in = new BufferedReader(new InputStreamReader(System.in));
+    var out = new PrintWriter(new OutputStreamWriter(System.out));
+    String[] str1 = in.readLine().split(" ");
+    int a = Integer.parseInt(str1[0]);
+    int b = Integer.parseInt(str1[1]);
+    out.print(a - b);
+    out.flush();
+    out.close();
+    in.close();
+  }
+}`
+  },
+  {
     time: '2024.1.25 15:00:01',
     lang: 'java',
     runningTime: 'N/A',
     runningSpace: 'N/A',
     acceptData: 0,
     state: "danger",
-    desc: "Error",
+    desc: "Runtime Error",
     code: `public class Main{
+  public static void main(String[] args) {
+    int i = 5 / 0 ;
+  }
+}`,
+  },
+  {
+    time: '2024.1.25 15:11:01',
+    lang: 'java',
+    runningTime: 'N/A',
+    runningSpace: 'N/A',
+    acceptData: 0,
+    state: "danger",
+    desc: "Compile Error",
+    code: `public class Test{
   public static void main(String[] args) {
 
   }

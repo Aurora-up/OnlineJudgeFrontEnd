@@ -24,4 +24,16 @@ export default defineConfig({
       `monaco-editor/esm/vs/editor/editor.worker`
     ],
   },
+  // server: {
+  //   // 定义代理规则
+  //   proxy: {
+  //     // 代理目标，这里是你的后端服务器地址
+  //     '/twikooApi': {
+  //       target: 'https://aurora-up-oj-comment.hf.space',
+  //       changeOrigin: true, // 是否更改请求源
+  //       rewrite: (path) => path.replace(/^\/api/, ''), // 如果后端服务器不需要/api前缀，可以在这里重写路径
+  //     },
+  //   },
+  //   // 其他服务器配置...
+  // },
 })

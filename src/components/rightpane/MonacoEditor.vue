@@ -9,10 +9,6 @@ import { language as javaLanguage } from 'monaco-editor/esm/vs/basic-languages/j
 import { language as cppLanguage } from 'monaco-editor/esm/vs/basic-languages/cpp/cpp.js'
 import { language as rustLanguage } from 'monaco-editor/esm/vs/basic-languages/rust/rust.js'
 import { language as pythonLanguage } from 'monaco-editor/esm/vs/basic-languages/python/python.js'
-import 'monaco-editor/esm/vs/basic-languages/java/java.contribution'
-import 'monaco-editor/esm/vs/basic-languages/cpp/cpp.contribution'
-import 'monaco-editor/esm/vs/basic-languages/python/python.contribution'
-import 'monaco-editor/esm/vs/basic-languages/rust/rust.contribution'
 
 import { editorProps } from './monacoEditorType'
 
@@ -22,24 +18,53 @@ export default defineComponent({
   emits: ['update:modelValue', 'change', 'editor-mounted'],
   setup(props, { emit }) {
     (self as any).MonacoEnvironment = {
-      getWorker: (_: string, label: string) => {
-        const getWorkerModule = (moduleUrl: string, label: string) =>
-          new Worker((self as any).MonacoEnvironment.getWorkerUrl(moduleUrl), {
-            name: label,
-            type: 'module'
-          })
+      getWorker: function (_:string, label:string) {
         switch (label) {
-          case 'c':
-          case 'cpp':
-            return getWorkerModule('/monaco-editor/esm/vs/language/cpp/cpp.worker?worker', label)
-          case 'java':
-            return getWorkerModule('/monaco-editor/esm/vs/language/java/java.worker?worker', label)
-          case 'rust':
-            return getWorkerModule('/monaco-editor/esm/vs/language/rust/rust.worker?worker', label)
-          case 'python':
-            return getWorkerModule('/monaco-editor/esm/vs/language/python/python.worker?worker', label)
+          case 'json':
+            return new Worker(
+              new URL(
+                '../../../node_modules/monaco-editor/esm/vs/language/json/json.worker.js',
+                import.meta.url,
+              ),
+              { type: 'module' },
+            );
+          case 'css':
+          case 'scss':
+          case 'less':
+            return new Worker(
+              new URL(
+                '../../../node_modules/monaco-editor/esm/vs/language/css/css.worker.js',
+                import.meta.url,
+              ),
+              { type: 'module' },
+            );
+          case 'html':
+          case 'handlebars':
+          case 'razor':
+            return new Worker(
+              new URL(
+                '../../../node_modules/monaco-editor/esm/vs/language/html/html.worker.js',
+                import.meta.url,
+              ),
+              { type: 'module' },
+            );
+          case 'typescript':
+          case 'javascript':
+            return new Worker(
+              new URL(
+                '../../../node_modules/monaco-editor/esm/vs/language/javascript/javascript.worker.js',
+                import.meta.url,
+              ),
+              { type: 'module' },
+            );
           default:
-            return getWorkerModule('/monaco-editor/esm/vs/editor/editor.worker?worker', label)
+            return new Worker(
+              new URL(
+                '../../../node_modules/monaco-editor/esm/vs/editor/editor.worker.js',
+                import.meta.url,
+              ),
+              { type: 'module' },
+            );
         }
       }
     }

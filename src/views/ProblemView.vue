@@ -204,6 +204,7 @@ const UDGrid = ref<string>("7fr auto 3fr")
  */
 const getCodeIsResize = (isEditorResize: Ref<boolean>) => {
   // console.log("接受到 EditorComponent 传来的参数: " + isEditorResize.value)
+  /* 处理 “扩展布局” 的双击 */
   if (isEditorResize.value) {
     // 若未 "拖拽" 直接设置 grip 布局即可 ———— 双击初始布局时触发
     LRGrid.value = "1fr auto 15fr"
@@ -212,27 +213,39 @@ const getCodeIsResize = (isEditorResize: Ref<boolean>) => {
       leftPane.value.style.width = "108px"
       rightPane.value.style.width = "92vw"
       setLTabDir("108px")
+      setRTabDir("81px");
+      /* 同步修改 MonacoEditor 的尺寸 */
+      codeWidthIsChange.value = !codeWidthIsChange.value;
+      /* 同步控制 Code Config 的显隐 */
+      if (rightPane.value.style.width == '80px') isDisplayCodeConfig.value = false
+      else isDisplayCodeConfig.value = true
     }
     /* 逻辑同上, 设置右侧上下盒子的布局 */
     UDGrid.value = "17fr auto 1fr"
     if (rightTopBox.value && rightBottomBox.value) {
       rightTopBox.value.style.height = '86vh';
-      CodeHeightVH.value = '77.5vh'                // 同步设置 Code 的尺寸
       rightBottomBox.value.style.height = '48px'
+      /* 同步修改 MonacoEditor 的尺寸 */
+      codeWidthIsChange.value = !codeWidthIsChange.value;
+      CodeHeightVH.value = '77.5vh'
     }
   }
   // 再次双击重置为 初始布局
   else {
+    codeWidthIsChange.value = !codeWidthIsChange.value;
     LRGrid.value = "3.5fr auto 6.5fr"
     if (leftPane.value && rightPane.value) {
       rightPane.value.style.width = "65.5vw"
       leftPane.value.style.width = "33vw"
+      /* 同步控制 Code Config 的显隐 */
+      if (rightPane.value.style.width == '80px') isDisplayCodeConfig.value = false
+      else isDisplayCodeConfig.value = true
     }
     setLTabDir("109px")
     UDGrid.value = "7fr auto 3fr"
     if (rightTopBox.value && rightBottomBox.value) {
       rightTopBox.value.style.height = "64.5vh"
-      CodeHeightVH.value = '54.5vh'                 // 同步设置 Code 的尺寸
+      CodeHeightVH.value = '54.5vh'       // 同步设置 Code 的尺寸
       rightBottomBox.value.style.height = "27.5vh"
     }
   }
@@ -249,17 +262,23 @@ const getLeftIsResize = (isLeftResize: Ref<boolean>) => {
     LRGrid.value = "20fr auto 1fr"
     if (rightPane.value && leftPane.value) {
       rightPane.value.style.width = "80px"
+
+      /* 同步修改 MonacoEditor 的尺寸 */
       codeWidthIsChange.value = !codeWidthIsChange.value;
-      // console.log(rightPane.value.style.width)
-      if (rightPane.value.style.width == '80px') isDisplayCodeConfig.value = false   // 同步控制 Code Config 的显隐
+
+      /* 同步控制 Code Config 的显隐 */
+      if (rightPane.value.style.width == '80px') isDisplayCodeConfig.value = false
       else isDisplayCodeConfig.value = true
+
       leftPane.value.style.width = "94vw"
+      setLTabDir("109px")
       setRTabDir("80px")
     }
     UDGrid.value = "17fr auto 1fr"
   }else {
     LRGrid.value = "3.5fr auto 6.5fr"
     if (rightPane.value && leftPane.value && rightTopBox.value) {
+      /* 同步修改 MonacoEditor 的尺寸 */
       codeWidthIsChange.value = !codeWidthIsChange.value;
       rightPane.value.style.width = "65vw"
       leftPane.value.style.width = "34vw"

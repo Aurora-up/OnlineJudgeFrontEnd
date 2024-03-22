@@ -10,6 +10,7 @@
       :theme="currentEditorTheme"
       :height="CodeHeightVH"
       width="100%"
+      @blur="test"
     />
   </div>
 </template>
@@ -17,6 +18,9 @@
 <script setup lang="ts">
 import monacoEditor from '@/components/rightpane/MonacoEditor.vue'
 import { getCurrentInstance, inject, onMounted, type Ref, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+const route = useRoute();
+const PId = route.params.PId;
 
 const currentLang = ref<string>('rust')
 const currentFontSize = ref<number>(14)
@@ -34,10 +38,14 @@ onMounted(() => {
     currentTabSize.value = configData.tabSize
     currentEditorTheme.value = configData.theme
   }
-  console.log("当前主题" + currentEditorTheme.value);
+  // todo 还需添加 UId
+  const storeCodeValue = localStorage.getItem(`code-value-${PId}-${currentLang.value}`);
+  if (storeCodeValue != null) {
+    codeValue.value = JSON.parse(storeCodeValue).code ?? "";
+  }
 })
 
-
+/* 接收 Code Config */
 const currentComponentInstance = getCurrentInstance()
 currentComponentInstance?.proxy?.$Bus.on('on-editor-config', (configs: any) => {
   currentLang.value = configs[0].value ?? 'rust'
@@ -64,9 +72,26 @@ const editorOption = ref({
 })
 
 
-watch(codeValue, (newValue, oldValue) => {
+watch(codeValue, (newValue) => {
   console.log(newValue)
+  localStorage.setItem(`code-value-${PId}-${currentLang.value}`, JSON.stringify({
+    code: newValue
+  }));
 })
+
+watch(currentLang, (newValue) => {
+  // todo 还需添加 UId
+  const storeCodeValue = localStorage.getItem(`code-value-${PId}-${newValue}`);
+  if (storeCodeValue != null) {
+    codeValue.value = JSON.parse(storeCodeValue).code ?? "";
+  }else {
+    codeValue.value = ""
+  }
+})
+
+const test = () => {
+  console.log("111")
+}
 
 const editorMounted = (editor: any) => {}
 

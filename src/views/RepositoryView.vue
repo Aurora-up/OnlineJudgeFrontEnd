@@ -26,7 +26,6 @@
               size="small"
               :pagination="pagination"
               cell-empty-content="-"
-              @row-click="handleRowClick"
             >
             </t-table>
           </div>
@@ -94,7 +93,7 @@ const columns = ref([
     width: '430',
     cell: (h, { row }) => {
       return(
-        <t-link theme="default" hover="underline"> {row.Problem} </t-link>
+        <t-link theme="default" hover="underline" onClick={() => handleClickProblemLink(row.PID)}> {row.Problem} </t-link>
       )
     }
   },
@@ -121,11 +120,13 @@ const router = useRouter();
 
 
 const handleRowClick = (...rows) => {
-  console.log(parseInt(rows[0].row.PID))
+}
+
+const handleClickProblemLink = (pid) => {
   router.push({
     name: "ProblemDescription",
     params: {
-      PId:rows[0].row.PID
+      PId: pid
     }
   })
 }

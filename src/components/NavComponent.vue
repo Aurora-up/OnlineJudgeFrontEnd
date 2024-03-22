@@ -44,11 +44,6 @@ onMounted(() => {
 </script>
 
 <style lang="less" scoped>
-.t-menu__operations {
-  .t-button {
-    margin-left: 8px;
-  }
-}
 
 .t-demo-menu--dark {
   .t-button {
@@ -78,7 +73,9 @@ onMounted(() => {
   width: 40px;
   height: 40px;
   cursor: pointer;
+  padding-bottom: 20px;
 }
+
 
 .nav-contain {
   display: flex;
