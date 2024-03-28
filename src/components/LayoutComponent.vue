@@ -1,31 +1,28 @@
 <template>
-  <div>
-    <t-layout>
+    <div>
+        <t-layout>
+            <t-header id="header">
+                <NavComponent></NavComponent>
+            </t-header>
 
-      <t-header>
-        <NavComponent></NavComponent>
-      </t-header>
-
-      <t-content class="content">
-        <router-view></router-view>
-      </t-content>
-
-    </t-layout>
-  </div>
+            <t-content class="content">
+                <router-view></router-view>
+            </t-content>
+        </t-layout>
+    </div>
 </template>
-
 
 <script setup lang="ts">
 import NavComponent from '@/components/NavComponent.vue'
-import FooterComponent from '@/components/FooterComponent.vue'
-
-
 </script>
 
-<style scoped>
+<style>
 .content {
-  height: 94vh;
-  background-color: #ffffff;
-  overflow: hidden;
+    height: 96vh;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+#header {
+    height: 44px;
 }
 </style>

@@ -1,5 +1,46 @@
 {
   "files": [],
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "types": ["naive-ui/volar"],
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    // Enable project compilation
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "inlineSources": false,
+    "stripInternal": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "importHelpers": true,
+    "downlevelIteration": false,
+    "noImplicitReturns": true,
+    // Enable type checking of declaration files, skip in lsp where needed
+    "skipLibCheck": false,
+    // Disallow inconsistently-cased references to the same file
+    "noImplicitOverride": true,
+    "verbatimModuleSyntax": false
+  },
+  "include": [
+    "**/src/**/*.ts",
+    "**/src/**/*.tsx",
+    "**/lsp/*/*/*.ts",
+    "**/lsp/*/*/*.js",
+    "*.ts"
+  ],
+  "exclude": [
+    "dist/**/*",
+    "lib/**/*",
+    "node_modules/**/*"
+  ],
   "references": [
     {
       "path": "./tsconfig.node.json"
@@ -7,10 +48,7 @@
     {
       "path": "./tsconfig.app.json"
     },
-
+    { "path": "lsp/server/tsconfig.src.json" },
+    { "path": "lsp/client/tsconfig.src.json" }
   ],
-  "compilerOptions": {
-    // ...
-    "types": ["naive-ui/volar"]
-  }
 }

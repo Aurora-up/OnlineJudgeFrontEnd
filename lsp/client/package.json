@@ -1,0 +1,74 @@
+{
+  "name": "monaco-language-client",
+  "version": "1.0.0",
+  "description": "Monaco Language client implementation",
+  "license": "MIT",
+  "type": "module",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      ".": [
+        "lib/index.d.ts"
+      ]
+    }
+  },
+  "engines": {
+    "node": ">=16.11.0",
+    "npm": ">=9.0.0"
+  },
+  "files": [
+    "lib",
+    "src",
+    "README.md",
+    "CHANGELOG.md",
+    "License.txt"
+  ],
+  "dependencies": {
+    "@codingame/monaco-vscode-editor-service-override": "~2.0.0",
+    "@codingame/monaco-vscode-languages-service-override": "~2.0.0",
+    "@codingame/monaco-vscode-model-service-override": "~2.0.0",
+    "@codingame/monaco-vscode-api": "~2.0.0",
+    "@codingame/monaco-vscode-editor-api": "~2.0.0",
+    "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@>=2.0.0 <2.1.0",
+    "vscode": "npm:@codingame/monaco-vscode-api@>=2.0.0 <2.1.0",
+    "vscode-languageclient": "~9.0.1"
+  },
+  "peerDependencies": {
+    "@codingame/monaco-vscode-api": "~2.0.0",
+    "@codingame/monaco-vscode-editor-api": "~2.0.0",
+    "vscode": "npm:@codingame/monaco-vscode-api@>=2.0.0 <2.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@codingame/monaco-vscode-api": {
+      "optional": false
+    },
+    "@codingame/monaco-vscode-editor-api": {
+      "optional": false
+    },
+    "monaco-editor": {
+      "optional": false
+    },
+    "vscode": {
+      "optional": false
+    }
+  },
+  "overrides": {
+    "monaco-editor": "$@codingame/monaco-vscode-editor-api"
+  },
+  "resolutions": {
+    "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@>=2.0.0 <2.1.0"
+  },
+  "scripts": {
+    "clean": "shx rm -fr lib *.tsbuildinfo",
+    "compile": "tsc --build tsconfig.src.json",
+    "build:msg": "echo Building monaco-languageclient:",
+    "build": "npm run build:msg && npm run clean && npm run compile"
+  }
+}
