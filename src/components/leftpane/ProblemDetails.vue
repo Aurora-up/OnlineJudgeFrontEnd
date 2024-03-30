@@ -1,5 +1,5 @@
 <template>
-    <div class="qDetails">
+    <div class="qDetails" @dblclick="stopPropagationEvent">
         <div style="margin-left: 20px">
             <h1 style="font-size: 27px">{{ PID }}. {{ QName }}</h1>
         </div>
@@ -68,8 +68,12 @@ $0 ≤ A, B ≤ 10^8$
 \`\`\`text
 7
 \`\`\`
-#### 时间/空间限制:  \`1s / 64MB\``
+#### 时间/空间限制:  \`1s / 64MB\`
+`
 )
+const stopPropagationEvent = (event: Event) => {
+    event.stopPropagation();
+}
 
 //
 //
@@ -116,6 +120,6 @@ $0 ≤ A, B ≤ 10^8$
 <style scoped>
 .qDetails {
     overflow: auto;
-    height: 86vh;
+    height: 90vh;
 }
 </style>

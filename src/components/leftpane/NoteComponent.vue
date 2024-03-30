@@ -10,6 +10,7 @@
         @onSave="onSave"
         @onError="onError"
         @onBlur="onBlur"
+        @dblclick="stopPropagationEvent"
     />
     <div></div>
 </template>
@@ -42,6 +43,10 @@ const onError = (err) => {
 //  编辑器失去焦点时
 const onBlur = (e) => {
     console.log('是否保存笔记?', e)
+}
+
+const stopPropagationEvent = (event: Event) => {
+    event.stopPropagation();
 }
 
 /* 工具展示 */

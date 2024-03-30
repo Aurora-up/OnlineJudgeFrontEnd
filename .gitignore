@@ -7,7 +7,8 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-lsp/server/src/resource/java/workspace/*
+lsp/server/workspace
+lsp/server/src/resource/java/workspace
 node_modules
 .DS_Store
 dist

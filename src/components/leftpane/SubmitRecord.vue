@@ -1,5 +1,5 @@
 <template>
-    <t-collapse>
+    <t-collapse @dblclick="stopPropagationEvent">
         <t-collapse-panel
             :key="index"
             v-for="(item, index) in submitData"
@@ -187,6 +187,9 @@ public class Main{
 }`
     }
 ]
+const stopPropagationEvent = (event: Event) => {
+    event.stopPropagation();
+}
 
 // todo 从后端请求来 提交记录
 

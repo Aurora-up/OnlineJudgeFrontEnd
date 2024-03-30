@@ -5,6 +5,7 @@
                 <t-icon name="code" class="tabs-icon-margin" />
                 {{ problemCode }}
             </template>
+            <EditorConfigComponent @on-full-screen="getFullScreenTip"></EditorConfigComponent>
             <div style="overflow: auto; height: 100%">
                 <keep-alive>
                     <MonacoCodeEditor></MonacoCodeEditor>
@@ -19,10 +20,9 @@
             <p style="padding: 25px">Chatgpt</p>
         </t-tab-panel>
     </t-tabs>
-    <EditorConfigComponent :isDisplay="isDisplayCodeConfig2"></EditorConfigComponent>
 </template>
 <script setup lang="ts">
-import { inject, onMounted, ref, type Ref, watch } from 'vue'
+import { inject, ref, type Ref, watch } from 'vue'
 import EditorConfigComponent from '@/components/rightpane/EditorConfigComponent.vue'
 import MonacoCodeEditor from '@/components/rightpane/MonacoCodeEditor.vue'
 
@@ -43,11 +43,9 @@ watch(placement, (newPlacement) => {
 
 // 当前选中的 Tab
 const tabItem = ref('first')
-/* 控制切换选项卡时是否显示 Code Config ———— 发送给 EditorConfigComponent 组件 */
-const isDisplayCodeConfig2 = ref<boolean>(true)
+
 const handlerChange = (newValue: string) => {
     tabItem.value = newValue
-    isDisplayCodeConfig2.value = tabItem.value == 'first'
 }
 
 /* 是否重设尺寸 (用于双击某个 Tab 来将该 Tab 尺寸扩至限制的最大或恢复初始布局) */
@@ -58,15 +56,11 @@ const resize = () => {
     emit('on-dblclick', isResize)
 }
 
-onMounted(() => {
-    // document.addEventListener('dblclick', (event) => {
-    //     // 判断点击的目标元素是否为具有类名为 "xxx" 的 div 元素
-    //     if (event.target.classList.contains('t-tabs__nav-scroll')) {
-    //         // 如果是，则执行双击事件处理函数
-    //         resize();
-    //     }
-    // });
-})
+const getFullScreenTip = (isFullScreen: boolean) => {
+    isResize.value =isFullScreen;
+    emit('on-dblclick', isResize)
+}
+
 </script>
 <style scoped>
 .tabs-icon-margin {

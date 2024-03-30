@@ -5,7 +5,7 @@
                 <t-icon name="measurement-1" class="tabs-icon-margin" />
                 {{ codeTest }}
             </template>
-            <div class="runTab">
+            <div class="runTab" @dblclick="stopPropagationEvent">
                 <div class="submitPane">
                     <t-space style="margin-top: 10px">
                         <t-button
@@ -45,6 +45,8 @@
             <template #label>
                 <t-icon name="calendar" class="tabs-icon-margin" /> {{ codeResult }}
             </template>
+
+            <div @dblclick="stopPropagationEvent">执行结果</div>
         </t-tab-panel>
     </t-tabs>
 </template>
@@ -141,6 +143,10 @@ const resize = () => {
     isResize.value = !isResize.value
     emit('on-r-dblclick', isResize)
     // console.log(isResize.value)
+}
+
+const stopPropagationEvent = (event: Event) => {
+    event.stopPropagation();
 }
 </script>
 <style lang="less" scoped>

@@ -1,7 +1,7 @@
 <template>
     <t-tabs
         :value="tabValue"
-        @change="handlerChange"
+        @change="handlerTabsChange"
         :placement="placement"
         @dblclick="resize"
         :lazy="true"
@@ -45,17 +45,13 @@ import QuestionDetails from '@/components/leftpane/ProblemDetails.vue'
 import SubmitRecord from '@/components/leftpane/SubmitRecord.vue'
 import { useRoute, useRouter } from 'vue-router'
 
-const PId = inject<number>('PId')
-const router = useRouter()
-const route = useRoute()
-
-/* 获取 Tabs 位置 */
+/* 获取 Tabs 标题的位置 */
 const placement: Ref<string> = inject<Ref<string>>('questionTabsPlacement') ?? ref('top')
-
 const problemDescription = ref<string>('题目')
 const problemSolution = ref<string>('题解')
 const problemSubmission = ref<string>('提交记录')
 const problemNote = ref<string>('笔记')
+// 根据 Tabs 位置控制标题的显隐
 watch(placement, (newPlacement) => {
     if (newPlacement == 'left') {
         problemDescription.value = ''
@@ -69,13 +65,19 @@ watch(placement, (newPlacement) => {
         problemNote.value = '笔记'
     }
 })
+/*----------------------------------------------------------------------------------------*/
 
+/* 控制 切换选项卡后的路由变化 和 切换路由后的选项卡变化 */
+const PId = inject<number>('PId')
+const router = useRouter()
+const route = useRoute()
+// 左侧 LeftPane 中默认显示 题目描述 所在的选项卡
 const tabValue = ref('description')
-
 onMounted(() => {
+    // 刷新页面后根据路由切换至对应的选项卡
     tabValue.value = route.path.split('/')[2]
 })
-
+/* 跳转至对应路由 */
 const toTab = (routerName: string) => {
     router.replace({
         name: routerName,
@@ -84,8 +86,11 @@ const toTab = (routerName: string) => {
         }
     })
 }
-
-const handlerChange = (newValue: string) => {
+/**
+ * 根据选项卡的切换修改对应的路由
+ * @param newValue 选项卡值
+ */
+const handlerTabsChange = (newValue: string) => {
     tabValue.value = newValue
     switch (newValue) {
         case 'solution':
@@ -101,6 +106,7 @@ const handlerChange = (newValue: string) => {
             toTab('ProblemDescription')
     }
 }
+/*----------------------------------------------------------------------------------------*/
 
 /* 是否重设尺寸 (用于双击某个 Tab 来将该 Tab 尺寸扩至限制的最大或恢复初始布局) */
 const isResize = ref<boolean>(false)
@@ -109,6 +115,7 @@ const resize = () => {
     isResize.value = !isResize.value
     emit('on-l-dblclick', isResize)
 }
+
 </script>
 <style>
 .tabs-icon-margin {

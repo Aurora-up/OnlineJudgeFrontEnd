@@ -21,7 +21,6 @@ export const runCppServer = (baseDir: string, relativeDir: string) => {
             '--clang-tidy',
             '--function-arg-placeholders=true',
             "--query-driver=/usr/bin/g++",
-            "--query-driver=/usr/bin/gcc",
             '--header-insertion-decorators',
         ],
         wsServerOptions: {

@@ -24,6 +24,7 @@ declare module 'vue' {
     }
 }
 
+
 const app = createApp(App)
 app.config.globalProperties.$Bus = Mit
 

@@ -138,6 +138,7 @@ export type MonacoCodeEditor = {
     editor: editor.IStandaloneCodeEditor
     uri: Uri
     modelRef: IReference<ITextFileEditorModel>
+    fileSystemProvider: RegisteredFileSystemProvider
 }
 
 /**
@@ -157,7 +158,7 @@ export const doInit = async (
                 ...getConfigurationServiceOverride(), // 初始化 "配置" 服务
                 ...getKeybindingsServiceOverride() // 初始化 "键位映射" 服务
             },
-            debugLogging: false, // 是否开启调试日志
+            debugLogging: true, // 是否开启调试日志
             // workspace 配置
             workspaceConfig: {
                 workspaceProvider: {
@@ -187,9 +188,9 @@ export const adaptLangFileName = (lang: string): string => {
     mp.set('cpp', 'main.cpp')
     mp.set('c', 'main.c')
     if (mp.has(lang)) {
-        return mp.get(lang) ?? 'main.py'
+        return mp.get(lang) ?? ''
     }
-    return 'main.py'
+    return ''
 }
 
 /**
@@ -212,7 +213,7 @@ export const adaptLangModel = async (lang: string, fileName: string, codeContent
  * 适配不同语言的一些配置项:[LSP 服务的地址和端口, Monaco Editor 注册配置]
  * @param lang 语言
  */
-export const adaptLangConfig = (lang: string): LangConfig | undefined => {
+export const adaptLangConfig = (lang: string): LangConfig => {
     const mp = new Map<string, LangConfig>()
     mp.set('python', {
         serverPath: '/pyright',
@@ -250,8 +251,8 @@ export const adaptLangConfig = (lang: string): LangConfig | undefined => {
         }
     })
     mp.set('c', {
-        serverPath: '/cpp',
-        serverPort: 30004,
+        serverPath: '/c',
+        serverPort: 30005,
         langRegisterConfig: {
             id: 'c',
             extensions: ['.c']
@@ -306,7 +307,8 @@ export const createMonacoEditor = async (config: {
     const result = {
         editor,
         uri,
-        modelRef
+        modelRef,
+        fileSystemProvider
     } as MonacoCodeEditor
     return Promise.resolve(result)
 }

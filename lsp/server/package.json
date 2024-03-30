@@ -76,6 +76,7 @@
     "start:server:python": "node --loader ts-node/esm src/python/server/direct.ts",
     "start:server:rust": "node --loader ts-node/esm src/rust/server/direct.ts",
     "start:server:java": "node --loader ts-node/esm src/java/server/direct.ts",
-    "start:server:cpp": "node --loader ts-node/esm src/cpp/server/direct.ts"
+    "start:server:cpp": "node --loader ts-node/esm src/cpp/server/direct.ts",
+    "start:server:c": "node --loader ts-node/esm src/c/server/direct.ts"
   }
 }
