@@ -9,47 +9,48 @@ const routes: Array<RouteRecordRaw> = [
         path: '/',
         name: 'Layout',
         component: LayoutComponent,
+        redirect: '/problem',
         children: [
             {
-                path: 'problem',
+                path: '/problem',
                 name: 'Repository',
                 component: RepositoryView
             },
             {
-                path: 'problem/description/:PId',
+                path: '/problem/description/:PId',
                 name: 'ProblemDescription',
                 component: ProblemView
             },
             {
-                path: 'problem/solution/:PId',
+                path: '/problem/solution/:PId',
                 name: 'ProblemSolution',
                 component: ProblemView
             },
             {
-                path: 'problem/submission/:PId',
+                path: '/problem/submission/:PId',
                 name: 'ProblemSubmission',
                 component: ProblemView
             },
             {
-                path: 'problem/note/:PId',
+                path: '/problem/note/:PId',
                 name: 'ProblemNote',
                 component: ProblemView
             },
             {
-                path: 'share',
+                path: '/share',
                 name: 'Share',
                 component: () => import('@/views/ShareView.vue')
             },
             {
-                path: 'create-problem',
+                path: '/create-problem',
                 name: 'CreateProblem',
                 component: () => import('@/views/CreatProblemView.vue')
             },
             {
-                path: 'userinfo',
+                path: '/userinfo',
                 name: 'UserInfo',
                 component: () => import('@/views/UserInfoView.vue')
-            }
+            },
         ]
     },
     {

@@ -22,7 +22,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import QuestionDetails from '@/components/leftpane/ProblemDetails.vue'
-import RecentlySolution from '@/components/recently/RecentlySolution.vue'
+import RecentlySolution from '@/components/userInfo/recently/RecentlySolution.vue'
 
 const value = ref('first')
 

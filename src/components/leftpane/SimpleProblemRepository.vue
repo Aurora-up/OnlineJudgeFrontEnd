@@ -2,10 +2,8 @@
     <div class="ex-repository-contain">
         <div class="repository-contain">
             <div class="repository-l-contain">
-                <t-card :bordered="false" :shadow="true">
-                    <div class="repository-content">
-                        <h1>Aurora Online Judge 题库</h1>
 
+                    <div class="repository-content">
                         <t-input placeholder="搜索题目" clearable size="large" style="width: 70%">
                             <template #suffixIcon>
                                 <search-icon :style="{ cursor: 'pointer' }" />
@@ -29,17 +27,14 @@
                         >
                         </t-table>
                     </div>
-                </t-card>
-            </div>
-            <div class="calendar-contain"><Calendar></Calendar></div>
-        </div>
 
-        <FooterComponent></FooterComponent>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup lang="jsx">
-import { getCurrentInstance, onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { SearchIcon } from 'tdesign-icons-vue-next'
 import { useRouter } from 'vue-router'
 import FooterComponent from '@/components/FooterComponent.vue'
@@ -90,7 +85,7 @@ const columns = ref([
     {
         colKey: 'Problem',
         title: '题目',
-        width: '430',
+        width: '100',
         cell: (h, { row }) => {
             return (
                 <t-link
@@ -133,15 +128,11 @@ const handleClickProblemLink = (pid) => {
         params: {
             PId: pid
         }
-    })
+    }).then(() => {
+        // 强制刷新当前页面
+        router.go(0); // 或者 router.back()
+    });
 }
-
-/* 发送题目总数 */
-const currentComponentInstance = getCurrentInstance()
-onMounted(() => {
-    currentComponentInstance?.proxy?.$Bus.emit('problem-total', total)
-    localStorage.setItem('problem-total', JSON.stringify(total));
-})
 
 const pagination = {
     defaultCurrent: 1,
@@ -150,25 +141,9 @@ const pagination = {
 }
 </script>
 
-<style>
-.success-icon {
-    color: green;
-}
-
-.danger-icon {
-    color: crimson;
-}
-
-.default-icon {
-    color: #768390;
-}
-
-.warning-icon {
-    color: orange;
-}
-
+<style scoped>
 .ex-repository-contain {
-    width: 100vw;
+    width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -181,17 +156,11 @@ const pagination = {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    width: 73%;
+    width: 100%;
 }
 .repository-l-contain {
     margin-top: 10px;
     flex: 4;
-}
-.calendar-contain {
-    margin-top: 10px;
-    margin-left: 10px;
-    display: flex;
-    justify-content: center;
 }
 .repository-content {
     width: 100%;

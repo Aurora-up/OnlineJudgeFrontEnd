@@ -23,7 +23,7 @@
         </t-tab-panel>
         <t-tab-panel value="submission">
             <template #label>
-                <t-icon name="time" class="tabs-icon-margin" />
+                <t-icon name="history" class="tabs-icon-margin" />
                 {{ problemSubmission }}
             </template>
             <SubmitRecord></SubmitRecord>

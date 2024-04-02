@@ -2,32 +2,34 @@
     <!--  代码编辑器设置  -->
     <div class="codeConfig" v-show="isDisplayCodeConfig" @dblclick="stopPropagationEvent">
         <!--   语言筛选器     -->
-        <t-select
-            v-model="currentLang"
-            :options="LangOptions"
-            placeholder="语言"
-            size="medium"
-            borderless
-            auto-width
-            @change="handleUpdateCurrentLang"
-            class="langSelect"
-        ></t-select>
+        <t-tooltip content="选择编程语言">
+            <t-select
+                v-model="currentLang"
+                :options="LangOptions"
+                placeholder="语言"
+                size="medium"
+                borderless
+                auto-width
+                @change="handleUpdateCurrentLang"
+                class="langSelect"
+            ></t-select>
+        </t-tooltip>
 
+        <!--    题目模式    -->
+        <!--   todo 后续有精力再加核心代码模式     -->
         <div style="margin-left: 5px; margin-right: 5px">
-            <t-popup content="需手动编写输入输出, 注意输出格式" placement="top" trigger="hover">
+            <t-tooltip content="需手动编写输入输出, 注意输出格式">
                 <t-button theme="default" variant="text" style="color: #7a7a7a; font-size: 14px">
                     <div style="color: #03bf80; font-size: 30px; padding-right: 3px">·</div>
                     ACM模式
                 </t-button>
-            </t-popup>
+            </t-tooltip>
         </div>
 
         <!--    智能模式开关    -->
         <div style="margin-left: 5px; margin-right: 5px">
-            <t-popup
+            <t-tooltip
                 :content="`点击${isStartCurrentLangSmartTip == 1 ? '关闭' : '开启'}代码静态分析、语法提示、自动导包`"
-                placement="top"
-                trigger="hover"
             >
                 <t-button
                     theme="default"
@@ -36,35 +38,114 @@
                     @click="smartTipSwitch"
                     :loading="loadingStatus"
                 >
-                    <div v-show="!loadingStatus" class="tipStyle">·</div>
+                    <LightbulbIcon v-show="!loadingStatus" class="tipStyle" />
                     智能模式
                 </t-button>
-            </t-popup>
+            </t-tooltip>
+        </div>
+
+        <div style="flex-grow: 1"></div>
+
+        <div style="margin-left: 5px; margin-right: 3px">
+            <t-tooltip content="运行你输入的样例">
+                <t-button
+                    theme="default"
+                    variant="base"
+                    class="runButton"
+                    size="medium"
+                    @click="runCodeRequest"
+                    :disabled="submitLoading"
+                    :loading="runLoading"
+                >
+                    <svg
+                        v-show="!runLoading"
+                        t="1711957905578"
+                        class="icon"
+                        viewBox="0 0 1756 1024"
+                        version="1.1"
+                        xmlns="http://www.w3.org/2000/svg"
+                        p-id="10588"
+                        width="38"
+                        height="38"
+                    >
+                        <path
+                            d="M1220.672 487.107657c-0.215771-0.374857-0.453486-0.731429-0.676571-1.098971-6.266514-11.536457-16.010971-21.813029-28.692114-29.134629l-462.6944-267.136c-11.918629-6.880914-24.797257-10.203429-37.198629-10.296686-0.239543-0.003657-0.475429-0.020114-0.7168-0.020114-0.142629 0-0.2816 0.010971-0.424229 0.0128-0.778971 0.007314-1.552457 0.034743-2.327771 0.065829-0.164571 0.007314-0.329143 0.009143-0.493714 0.018286-20.598857 1.000229-39.416686 11.029943-49.634743 28.728686-4.885943 8.462629-7.259429 17.751771-7.389257 27.1488-0.751543 4.337371-1.155657 8.815543-1.155657 13.4016l0 534.273829c0 4.586057 0.404114 9.064229 1.155657 13.4016 0.129829 9.3952 2.505143 18.686171 7.389257 27.1488 10.218057 17.696914 29.034057 27.726629 49.632914 28.728686 0.1664 0.009143 0.334629 0.010971 0.501029 0.018286 0.771657 0.032914 1.543314 0.060343 2.320457 0.065829 0.142629 0.001829 0.2816 0.0128 0.424229 0.0128 0.241371 0 0.479086-0.018286 0.718629-0.020114 12.401371-0.095086 25.278171-3.4176 37.1968-10.296686l462.6944-267.136c12.682971-7.3216 22.4256-17.598171 28.692114-29.134629 0.223086-0.367543 0.4608-0.724114 0.676571-1.098971 5.176686-8.965486 7.533714-18.859886 7.389257-28.8256C1228.205714 505.967543 1225.848686 496.073143 1220.672 487.107657z"
+                            fill="#686868"
+                            p-id="10589"
+                        ></path>
+                    </svg>
+
+                    <span
+                        class="runTipText"
+                        >{{ runText }}</span
+                    >
+                </t-button>
+            </t-tooltip>
+        </div>
+
+        <div>
+            <t-tooltip content="提交评测">
+                <t-button
+                    theme="default"
+                    variant="base"
+                    class="submitButton"
+                    size="medium"
+                    @click="submitCodeRequest"
+                    :disabled="runLoading"
+                    :loading="submitLoading"
+                >
+                    <svg
+                        v-show="!submitLoading"
+                        t="1711957728402"
+                        class="submitIcon"
+                        viewBox="0 0 1024 1024"
+                        version="1.1"
+                        xmlns="http://www.w3.org/2000/svg"
+                        p-id="8696"
+                        width="24"
+                        height="24"
+                    >
+                        <path
+                            d="M512 128c-131.808 0-235.488 100.16-250.016 228a156.64 156.64 0 0 0-122.976 103.008C60.288 481.792 0 551.968 0 640c0 106.368 85.632 192 192 192h640c106.368 0 192-85.632 192-192 0-56.32-27.36-106.752-67.008-142.016-7.424-112.448-97.12-202.176-209.984-208C708.48 196.192 620.096 128 512 128z m0 64c88.384 0 159.072 56.672 184 136.992l7.008 23.008H736c88.16 0 160 71.84 160 160v16l12.992 10.016A130.336 130.336 0 0 1 960 640c0 72.832-55.168 128-128 128H192c-72.832 0-128-55.168-128-128a126.112 126.112 0 0 1 104.992-124.992l21.024-4 4-20.992C203.584 446.816 241.792 416 288 416h32v-32c0-107.84 84.16-192 192-192z m0 179.008l-23.008 21.984-128 128 46.016 46.016L480 493.984V704h64v-210.016l72.992 73.024 46.016-46.016-128-128-23.008-21.984z"
+                            p-id="8697"
+                            fill="#03BF80"
+                        ></path>
+                    </svg>
+                    <span
+                        class="submitTipText"
+                        >{{ submitText }}</span
+                    >
+                </t-button>
+            </t-tooltip>
         </div>
 
         <div style="flex-grow: 1"></div>
 
         <!--   代码编辑状态    -->
         <div style="margin-left: 5px; margin-right: 5px">
-            <t-popup content="⚠️ 清空缓存会导致丢失数据" placement="top" trigger="hover">
+            <t-tooltip content="⚠️ 清空缓存会导致丢失数据">
                 <t-button theme="default" variant="text" style="font-size: 13px; color: #7a7a7a">
+                    <UnhappyIcon
+                        style="color: #EA4C89; padding-top: 3px; margin-right: 3px"
+                        v-show="(!isStoreOrRecover && !isCoding)"
+                    />
                     <CheckCircleIcon
-                        style="color: #0d7a55; padding-top: 3px; margin-right: 3px"
+                        style="color: #03bf80; padding-top: 3px; margin-right: 3px"
                         v-show="isStoreOrRecover"
                     />
                     <Edit2Icon
-                        style="color: #0052d9; padding-top: 3px; margin-right: 3px"
+                        style="color: #03bf80; padding-top: 3px; margin-right: 3px"
                         v-show="isCoding"
                     />
                     {{ storeStatusTip }}
                 </t-button>
-            </t-popup>
+            </t-tooltip>
         </div>
 
         <!--   代码编辑器个性化设置    -->
         <div>
             <t-space>
-                <t-popup content="编辑器设置" placement="top" trigger="hover">
+                <t-tooltip content="编辑器设置">
                     <t-button
                         theme="default"
                         variant="text"
@@ -73,7 +154,7 @@
                     >
                         <Setting1Icon />
                     </t-button>
-                </t-popup>
+                </t-tooltip>
             </t-space>
             <!--   弹框 ——— 个性化设置    -->
             <t-dialog
@@ -166,40 +247,36 @@
 
         <!--   代码格式化    -->
         <div style="margin-left: 5px">
-            <t-popup content="格式化代码" placement="top" trigger="hover">
+            <t-tooltip content="格式化代码">
                 <t-button theme="default" variant="text" shape="circle" @click="codeFormat">
                     <FormatVerticalAlignLeftIcon />
                 </t-button>
-            </t-popup>
+            </t-tooltip>
         </div>
 
         <t-popconfirm
-            v-model="visible2"
+            v-model="confirmVisible"
             theme="warning"
             content="重制后无法恢复当前编辑器内容"
             @confirm="resetCodeTemplate"
         >
             <div style="margin-left: 5px">
-                <t-popup content="重制为代码模版" placement="top" trigger="hover">
+                <t-tooltip content="重制为代码模版">
                     <t-button theme="default" variant="text" shape="circle">
                         <RollfrontIcon />
                     </t-button>
-                </t-popup>
+                </t-tooltip>
             </div>
         </t-popconfirm>
 
         <!--   代码编辑器布局    -->
         <div style="margin-left: 5px; margin-right: 20px">
-            <t-popup
-                :content="isDisplayFullScreenIcon ? '沉浸布局' : '恢复布局'"
-                placement="top"
-                trigger="hover"
-            >
+            <t-tooltip :content="isDisplayFullScreenIcon ? '沉浸布局' : '恢复布局'">
                 <t-button theme="default" variant="text" shape="circle" @click="fullScreen">
                     <Fullscreen1Icon v-show="isDisplayFullScreenIcon" />
                     <FullscreenExit1Icon v-show="!isDisplayFullScreenIcon" />
                 </t-button>
-            </t-popup>
+            </t-tooltip>
         </div>
     </div>
 </template>
@@ -213,15 +290,13 @@ import {
     Fullscreen1Icon,
     FullscreenExit1Icon,
     Edit2Icon,
-    RollfrontIcon
+    RollfrontIcon,
+    LightbulbIcon, UnhappyIcon
 } from 'tdesign-icons-vue-next'
-import { useRoute } from 'vue-router'
-import { Event } from '@codingame/monaco-vscode-api/vscode/vs/base/common/event'
-import { MessagePlugin } from 'tdesign-vue-next'
 
 /* 页面挂载时加载 Local Store 中的数据 ———— 防止刷新后的数据丢失 */
 onMounted(() => {
-    // 获取编辑器设置
+    /* 获取编辑器设置, 若本地无数据, 则将默认值存至本地 */
     const codeConfig = localStorage.getItem('code-config')
     if (codeConfig != null) {
         const configData = JSON.parse(codeConfig)
@@ -240,6 +315,7 @@ onMounted(() => {
             })
         )
     }
+    /* 获取是否开启智能提示, 若本地无数据, 则将默认值存至本地 */
     const codeTipConfig = localStorage.getItem('code-tip')
     if (codeTipConfig != null) {
         isStartCurrentLangSmartTip.value = Number(codeTipConfig)
@@ -354,7 +430,6 @@ const configNo = () => {
 
 /* 控制左右拖拽时是否显示 Code Config ———— 接收 QuestionView 组件传来的信息 */
 const isDisplayCodeConfig = inject<Ref<boolean>>('isDisplayCodeConfig')
-
 /*----------------------------------------------------------------------------------------*/
 
 // 默认不开启当前语言的智能提示
@@ -369,19 +444,15 @@ const smartTipSwitch = async () => {
     } else {
         isStartCurrentLangSmartTip.value = 0
     }
+    // 向 MonacoEditor 发送是否开启智能提示
     currentComponentInstance?.proxy?.$Bus.emit('code-tip-switch', isStartCurrentLangSmartTip.value)
     localStorage.setItem('code-tip', JSON.stringify(isStartCurrentLangSmartTip.value))
 }
+// 接受 MonacoEditor 去开启智能提示的反馈信息
+// todo 加一个定义器, 防止超时无反馈
 currentComponentInstance?.proxy?.$Bus.on('switch-tip', (value: any) => {
     loadingStatus.value = false
     isStartCurrentLangSmartTip.value = value
-
-    if (value == 0) {
-        MessagePlugin.info({ content: '已关闭智能模式', placement: 'top' })
-    } else {
-        MessagePlugin.success({ content: '已开启智能模式', placement: 'top' })
-    }
-
     isStartCurrentLangSmartTip.value == 1
         ? (tipDisplayColor.value = '#03BF80')
         : (tipDisplayColor.value = '#EA4C89')
@@ -413,10 +484,12 @@ watch(codeStoreStatus, (n) => {
 })
 const storeStatusTip = computed(() => {
     switch (codeStoreStatus.value) {
+        case 0:
+            return '本地无代码哦'
         case 1:
             return '已从本地恢复'
         case 2:
-            return '代码编辑中...'
+            return '代码编辑中....'
         case 3:
             return '已存储至本地'
         default:
@@ -429,7 +502,7 @@ currentComponentInstance?.proxy?.$Bus.on('on-editor-blur', (value: any) => {
 /*----------------------------------------------------------------------------------------*/
 
 const codeFormat = () => {
-    currentComponentInstance?.proxy?.$Bus.emit('on-code-format', [currentLang.value])
+    currentComponentInstance?.proxy?.$Bus.emit('on-code-format', currentLang.value)
 }
 /*----------------------------------------------------------------------------------------*/
 
@@ -441,8 +514,8 @@ const fullScreen = () => {
     isDisplayFullScreenIcon.value = !isDisplayFullScreenIcon.value
 }
 /*----------------------------------------------------------------------------------------*/
-
-const visible2 = ref<boolean>(false)
+/* 是否重制为模版代码 */
+const confirmVisible = ref<boolean>(false)
 const adaptLangCodeTemplate = (lang: string): string => {
     const mp = new Map<string, string>()
     mp.set('python', '')
@@ -484,7 +557,6 @@ int main () {
     }
     return ''
 }
-
 // 重制为代码模版
 const resetCodeTemplate = () => {
     console.log('111')
@@ -493,11 +565,63 @@ const resetCodeTemplate = () => {
         adaptLangCodeTemplate(currentLang.value)
     )
 }
+/*----------------------------------------------------------------------------------------*/
 
 // 阻止当前页面的双击事件向上冒泡
 const stopPropagationEvent = (event: Event) => {
     event.stopPropagation()
 }
+/*----------------------------------------------------------------------------------------*/
+
+const runLoading = ref<boolean>(false)
+const submitLoading = ref<boolean>(false)
+const runText = ref<string>('运行')
+const submitText = ref<string>('提交')
+
+/* style control */
+const submitTextColor = ref<string>('#03BF80') // 运行时: #686868
+const runButtonPT = ref<string>('8px')  // 运行时 : 0
+const runButtonPR = ref<string>('5px')  // 运行时: 0
+
+const runCodeButtonStyleChange = () => {
+    runLoading.value = true
+    runText.value = '判题中...'
+    runButtonPT.value = '0'
+    runButtonPR.value = '0'
+}
+const runCodeButtonRecoverStyle =  () => {
+    runLoading.value = false
+    runText.value = '运行'
+    runButtonPT.value = '8px'
+    runButtonPR.value = '5px'
+}
+const submitCodeButtonStyleChange = () => {
+    submitLoading.value = true
+    submitTextColor.value = '#686868'
+    submitText.value = '判题中...'
+}
+const submitCodeButtonRecoverStyle =  () => {
+    submitLoading.value = false
+    submitTextColor.value = '#03BF80'
+    submitText.value = '运行'
+}
+
+const runCodeRequest = () => {
+    runCodeButtonStyleChange()
+    setTimeout(() => {
+        // todo 运行代码
+        runCodeButtonRecoverStyle()
+    }, 2000)
+}
+const submitCodeRequest = () => {
+    submitCodeButtonStyleChange()
+    setTimeout(() => {
+        // todo 提交代码
+        submitCodeButtonRecoverStyle()
+    }, 2000)
+}
+
+
 </script>
 <style>
 .tdesign-demo__select-input-ul-auto-width {
@@ -543,12 +667,57 @@ const stopPropagationEvent = (event: Event) => {
 }
 
 .tipStyle {
+    padding-top: 3px;
     color: v-bind(tipDisplayColor);
     font-size: 30px;
-    padding-right: 3px;
+    padding-right: 4px;
 }
 
 .t-input__inner {
     color: #7a7a7a;
+}
+
+.t-input__wrap {
+    border: none;
+}
+
+.runButton {
+    background-color: #f3f3f3 !important;
+    border: none !important;
+    padding-left: 4px;
+}
+
+.runButton:hover {
+    background-color: #e7e7e7 !important;
+}
+
+.submitButton {
+    background-color: #f3f3f3 !important;
+    border: none !important;
+    padding-left: 4px;
+}
+
+.submitButton:hover {
+    background-color: #e7e7e7 !important;
+}
+
+.runTipText {
+    padding-top: v-bind(runButtonPT);
+    padding-right: v-bind(runButtonPR);
+    font-weight: bold;
+    color: #686868;
+}
+
+.submitTipText {
+    padding-top: 1px;
+    margin-bottom: 1px;
+    padding-right: 4px;
+    color: v-bind(submitTextColor);
+    font-weight: bold;
+}
+
+.submitIcon {
+    padding-left: 12px;
+    padding-right: 12px;
 }
 </style>

@@ -15,11 +15,15 @@ import { useRoute } from 'vue-router'
 import MonacoEditor from '@/components/rightpane/MonacoEditor.vue'
 import { getCurrentInstance, onMounted, ref, watch } from 'vue'
 import type { Options } from '@/module/MonacoEditorType'
-import prettier from 'prettier/standalone'
+import prettier from "prettier";
+import * as javaPlugin from "prettier-plugin-java"
+import * as rustPlugin from "prettier-plugin-rust";
+
 
 const route = useRoute()
 const PId = route.params.PId
 
+/* 编辑器配置 */
 const codeValue = ref('')
 const currentLang = ref<string>('rust')
 const currentOptions = ref<Options>({
@@ -80,8 +84,8 @@ currentComponentInstance?.proxy?.$Bus.on('on-editor-config', (configs: any) => {
 // todo 代码格式化
 currentComponentInstance?.proxy?.$Bus.on('on-code-format', (lang: any) => {
     prettier.format(codeValue.value, {
-        parser: lang[0],
-        plugins: [],
+        parser: lang,
+        plugins: [rustPlugin, javaPlugin],
         tabWidth: currentOptions.value.tabSize
     })
 })

@@ -158,7 +158,7 @@ export const doInit = async (
                 ...getConfigurationServiceOverride(), // 初始化 "配置" 服务
                 ...getKeybindingsServiceOverride() // 初始化 "键位映射" 服务
             },
-            debugLogging: true, // 是否开启调试日志
+            debugLogging: false, // 是否开启调试日志
             // workspace 配置
             workspaceConfig: {
                 workspaceProvider: {

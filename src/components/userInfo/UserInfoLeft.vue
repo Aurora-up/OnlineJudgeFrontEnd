@@ -1,7 +1,7 @@
 <template>
     <div class="l-info-contain">
         <div>
-            <img src="../assets/user.jpg" alt="" style="height: 120px" />
+            <img src="../../assets/user.jpg" alt="" style="height: 120px" />
         </div>
         <h2>Aurora</h2>
         <div>
@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import RadarChart from '@/components/charts/RadarChart.vue'
+import RadarChart from '@/components/userInfo/charts/RadarChart.vue'
 import { ref } from 'vue'
 
 const userTag = ref<string[]>(['全栈', 'rust', 'vue', 'java'])

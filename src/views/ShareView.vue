@@ -1,45 +1,34 @@
 <template>
-    <t-space direction="vertical" size="large">
-        <div class="tdesign-tooltip-placement">
-            <t-button variant="outline" @click="tackle">
-                {{ isStartSmartTip ? '开启' : '关闭'}}
-            </t-button>
-        </div>
-    </t-space>
+
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { MessagePlugin } from 'tdesign-vue-next'
-import type { MessagePluginType } from 'tdesign-vue-next/es/message/plugin'
-import { MessageLoadingMethod, type MessageThemeList } from 'tdesign-vue-next/es/message/type'
+import prettier from "prettier";
+import * as javaPlugin from "prettier-plugin-java"
+import * as rustPlugin from "prettier-plugin-rust";
 
-// { content: '用户表示普通操作信息提示', placement: 'top', theme: "loading" }
-const isStartSmartTip = ref<boolean>(false)
-const msg = ref<any>(null)
-const tipStatus = ref<MessageThemeList>('loading')
+const javaText = `
+public class HelloWorldExample{
+  public static void main(String args[]){
+    System.out.println("Hello World !");
+  }
+}
+`;
 
-watch(isStartSmartTip, (n) => {
-    if (n) {
-        tipStatus.value = 'success'
-    }
-    else {
-        tipStatus.value = 'error'
-    }
-})
+const formattedText = prettier.format(javaText, {
+    parser: "java",
+    tabWidth: 2
+});
 
-const tackle = () => {
-    if (!isStartSmartTip.value) {
-        MessagePlugin(tipStatus.value, "正在开启智能提示")
-        setTimeout(() => {
-            isStartSmartTip.value = true;
-        }, 3000)
-    }
-};
+const code = `
+fn main() { println!("Hello World");
+}
+`;
 
-
+prettier.format(code, { plugins: [rustPlugin, javaPlugin] });
 
 </script>
 
 <style scoped>
+
 </style>

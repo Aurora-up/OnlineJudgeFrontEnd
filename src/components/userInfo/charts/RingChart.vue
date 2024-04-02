@@ -126,7 +126,7 @@ const option = ref({
             type: 'gauge',
             startAngle: 90,
             endAngle: -270,
-            center: ['50%', '60%'],
+            center: ['50%', '62%'],
             radius: '40%', // 控制环的大小
             axisLine: {
                 show: false

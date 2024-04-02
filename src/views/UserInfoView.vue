@@ -41,19 +41,20 @@
                             <Recently></Recently>
                         </t-card>
                     </div>
+                    <FooterComponent></FooterComponent>
                 </div>
             </div>
         </div>
-        <FooterComponent></FooterComponent>
+
     </div>
 </template>
 
 <script setup lang="ts">
-import PieChart from '@/components/charts/PieChart.vue'
-import RingChart from '@/components/charts/RingChart.vue'
-import HeatMap from '@/components/charts/HeatMap.vue'
-import Recently from '@/components/recently/Recently.vue'
-import UserInfoLeft from '@/components/UserInfoLeft.vue'
+import PieChart from '@/components/userInfo/charts/PieChart.vue'
+import RingChart from '@/components/userInfo/charts/RingChart.vue'
+import HeatMap from '@/components/userInfo/charts/HeatMap.vue'
+import Recently from '@/components/userInfo/recently/Recently.vue'
+import UserInfoLeft from '@/components/userInfo/UserInfoLeft.vue'
 import FooterComponent from '@/components/FooterComponent.vue'
 </script>
 

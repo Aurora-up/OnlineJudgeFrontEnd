@@ -28,7 +28,7 @@ import { useRoute, useRouter } from 'vue-router'
 const menuValue = ref('problem')
 
 const changeHandler = (active: any) => {
-    console.log('change', active)
+
 }
 
 const router = useRouter()

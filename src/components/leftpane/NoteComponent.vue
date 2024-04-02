@@ -82,6 +82,6 @@ const tool = ref([
 
 <style scoped>
 .md-editor {
-    height: 87vh;
+    height: 90.5vh;
 }
 </style>

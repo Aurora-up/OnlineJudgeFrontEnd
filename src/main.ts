@@ -8,6 +8,12 @@ import mitt from 'mitt'
 import VCalendar from 'v-calendar'
 import UndrawUi from 'undraw-ui'
 import 'v-calendar/style.css'
+import {
+    // create naive ui
+    create,
+    // component
+    NTabs, NTabPane
+} from 'naive-ui'
 
 import 'undraw-ui/dist/style.css'
 
@@ -18,6 +24,11 @@ import 'vfonts/FiraCode.css'
 
 const Mit = mitt()
 
+const naive = create({
+    components: [NTabs,NTabPane]
+})
+
+
 declare module 'vue' {
     export interface ComponentCustomProperties {
         $Bus: typeof Mit
@@ -27,7 +38,7 @@ declare module 'vue' {
 
 const app = createApp(App)
 app.config.globalProperties.$Bus = Mit
-
+app.use(naive)
 app.use(VCalendar, {})
 app.use(TDesign)
 app.use(createPinia())

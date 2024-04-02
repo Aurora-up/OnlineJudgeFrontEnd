@@ -76,9 +76,12 @@ const rightBottomDefaultHeight = ref<string>('23vh')
 const rightBottomBoxMaxHeight = ref<string>('89.5vh')
 const rightBottomBoxMinHeight = ref<string>('37px')
 
-const codeEditorDefaultHeight = ref<string>('62.5vh')
-const codeEditorMaxHeight = ref<number>(81.5)
+const codeEditorDefaultHeight = ref<string>('63vh')
+const codeEditorMaxHeight = ref<number>(82.5)
 const codeEditorMinHeight = ref<number>(11)
+const codeResultDefaultHeight = ref<string>('17vh');
+const codeResultMaxHeight = ref<number>(83)
+const codeResultMinHeight = ref<number>(0)
 
 /* 监听鼠标按下 "左右拖动条" */
 const LRMove = () => {
@@ -136,12 +139,19 @@ const isDisplayCodeConfig = ref<boolean>(true)
 provide('isDisplayCodeConfig', isDisplayCodeConfig)
 
 /**
- * 由于 Code mirror 组件的原因，其高度无法根据外层容器的变化而变化, 故需要在上下拖拽时同步修改 Code mirror 的高度
+ * 由于 Monaco Editor 组件的原因，其高度无法根据外层容器的变化而变化, 故需要在上下拖拽时同步修改 Monaco Editor 的高度
  */
 const CodeHeightVH = ref<string>(codeEditorDefaultHeight.value)
 provide('CodeHeightVH', CodeHeightVH)
 const codeWidthIsChange = ref<boolean>(false)
 provide('codeWidthIsChange', codeWidthIsChange)
+
+/**
+ * 上下拖拽时同时改变 结果部分的高度
+ */
+const CodeResultHeightVH = ref<string>(codeResultDefaultHeight.value)
+provide('CodeResultHeightVH', CodeResultHeightVH)
+
 
 /**
  * 左右拖拽逻辑
@@ -199,11 +209,18 @@ const handleVerticalMouseMove = (event: MouseEvent) => {
                 let vh = window.innerHeight * 0.01
                 const rightTopBoxVH = parseInt(rightTopBox.value.style.height, 10) / vh
 
-                /* 同步修改 Code mirror 组件的高度来获得更好的页面响应性 */
-                let codeVH = rightTopBoxVH - 7.5
+                /* 同步修改 Monaco Editor 组件的高度来获得更好的页面响应性 */
+                let codeVH = rightTopBoxVH - 7
                 if (codeVH <= codeEditorMinHeight.value) codeVH = codeEditorMinHeight.value
                 if (codeVH > codeEditorMaxHeight.value) codeVH = codeEditorMaxHeight.value
                 CodeHeightVH.value = codeVH.toString() + 'vh'
+
+                /* 同步修改 代码结果 部分的高度 */
+                const rightBottomBoxVH = parseInt(rightBottomBox.value.style.height, 10) / vh
+                let codeResultVH = rightBottomBoxVH - 3.5;
+                if (codeResultVH <= codeResultMinHeight.value) codeResultVH = codeResultMinHeight.value
+                if (codeResultVH > codeResultMaxHeight.value) codeResultVH = codeResultMaxHeight.value
+                CodeResultHeightVH.value = codeResultVH.toString() + 'vh'
             }
         }
     }
@@ -243,6 +260,7 @@ const getCodeIsResize = (isEditorResize: Ref<boolean>) => {
             /* 同步修改 MonacoEditor 的尺寸 */
             codeWidthIsChange.value = !codeWidthIsChange.value
             CodeHeightVH.value = codeEditorMaxHeight.value.toString() + 'vh'
+            CodeResultHeightVH.value = codeResultMinHeight.value.toString() + 'vh'
         }
     }
     // 再次双击重置为 初始布局
@@ -262,6 +280,7 @@ const getCodeIsResize = (isEditorResize: Ref<boolean>) => {
             rightTopBox.value.style.height = rightTopBoxDefaultHeight.value
             CodeHeightVH.value = codeEditorDefaultHeight.value // 同步设置 Code 的尺寸
             rightBottomBox.value.style.height = rightBottomDefaultHeight.value
+            CodeResultHeightVH.value = codeResultDefaultHeight.value;
         }
     }
 }
@@ -314,6 +333,7 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
         if (rightTopBox.value && rightBottomBox.value) {
             rightTopBox.value.style.height = rightTopBoxMinHeight.value
             CodeHeightVH.value = codeEditorMinHeight.value.toString() + 'vh' // 设置 Code 的尺寸
+            CodeResultHeightVH.value = codeResultMaxHeight.value.toString() + 'vh'
             rightBottomBox.value.style.height = rightBottomBoxMaxHeight.value
         }
     } else {
@@ -322,9 +342,11 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
             rightTopBox.value.style.height = rightTopBoxDefaultHeight.value
             CodeHeightVH.value = codeEditorDefaultHeight.value // 设置 Code 的尺寸
             rightBottomBox.value.style.height = rightBottomDefaultHeight.value
+            CodeResultHeightVH.value = codeResultDefaultHeight.value;
         }
     }
 }
+
 </script>
 
 <style scoped>
@@ -332,7 +354,7 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
     height: 100%;
     margin: 0;
     overflow: hidden;
-    background-color: #f0f0f0; /* 页面背景色为浅灰色 */
+    background-color: #F0F0F0; /* 页面背景色为浅灰色 */
 }
 
 #container {
@@ -354,6 +376,7 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
     min-width: 51px; /* 最小宽度 */
 }
 
+
 .right-pane {
     overflow: hidden; /* 禁止盒子内部内容滚动 */
     height: 100%;
@@ -374,6 +397,7 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
     max-height: 89.5vh;
 }
 
+
 .right-bottom-box {
     overflow: hidden; /* 禁止盒子内部内容滚动 */
     position: relative;
@@ -385,9 +409,10 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
     height: 100%;
 }
 
+
 .separator {
     width: 7px;
-    cursor: ew-resize; /* 可左右拖动 */
+    cursor: ew-resize; /* 鼠标变为左右拖动样式 */
     background-color: transparent; /* 透明拖动条 */
     transition: background-color 0.3s; /* 添加过渡效果 */
     z-index: 1;
@@ -400,7 +425,7 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
 .vertical-separator {
     height: 7px;
     position: relative;
-    cursor: ns-resize; /* 可上下拖动 */
+    cursor: ns-resize; /* 鼠标变为上下拖动样式 */
     background-color: transparent; /* 透明拖动条 */
     transition: background-color 0.3s; /* 添加过渡效果 */
     z-index: 1;
@@ -412,6 +437,7 @@ const getRunIsResize = (isRunResize: Ref<string>) => {
 .separator:hover,
 .vertical-separator:hover {
     background-color: #a6c8ff; /* 鼠标悬停时高亮为浅蓝色 */
+    border-radius: 8px;
 }
 
 .lrTag {
