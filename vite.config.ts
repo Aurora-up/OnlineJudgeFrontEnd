@@ -24,5 +24,5 @@ export default defineConfig({
   },
   define: {
     rootDirectory: JSON.stringify(__dirname)
-  }
+  },
 })

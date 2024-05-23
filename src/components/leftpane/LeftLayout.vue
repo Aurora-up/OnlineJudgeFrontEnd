@@ -12,21 +12,21 @@
                 {{ problemDescription }}
             </template>
             <!--  题目信息组件   -->
-            <QuestionDetails></QuestionDetails>
+            <ProblemDetails v-if="tabValue == 'description'"></ProblemDetails>
         </t-tab-panel>
         <t-tab-panel value="solution">
             <template #label>
                 <t-icon name="book-open" class="tabs-icon-margin" />
                 {{ problemSolution }}
             </template>
-            <p style="padding: 25px">题解</p>
+            <ProblemSolutionList v-if="tabValue == 'solution'"></ProblemSolutionList>
         </t-tab-panel>
         <t-tab-panel value="submission">
             <template #label>
                 <t-icon name="history" class="tabs-icon-margin" />
                 {{ problemSubmission }}
             </template>
-            <SubmitRecord></SubmitRecord>
+            <SubmitRecord v-if="tabValue == 'submission'"></SubmitRecord>
         </t-tab-panel>
         <t-tab-panel value="note">
             <template #label>
@@ -34,16 +34,18 @@
                 {{ problemNote }}
             </template>
             <!--  笔记组件  -->
-            <NoteComponent></NoteComponent>
+            <NoteComponent v-if="tabValue == 'note'"></NoteComponent>
         </t-tab-panel>
     </t-tabs>
 </template>
 <script setup lang="ts">
 import { ref, inject, type Ref, onMounted, watch } from 'vue'
 import NoteComponent from '@/components/leftpane/NoteComponent.vue'
-import QuestionDetails from '@/components/leftpane/ProblemDetails.vue'
+import ProblemDetails from '@/components/leftpane/ProblemDetails.vue'
+import PDetailsSK from '@/components/skeleton/PDetailsSK.vue'
 import SubmitRecord from '@/components/leftpane/SubmitRecord.vue'
 import { useRoute, useRouter } from 'vue-router'
+import ProblemSolutionList from '@/components/leftpane/ProblemSolutionList.vue'
 
 /* 获取 Tabs 标题的位置 */
 const placement: Ref<string> = inject<Ref<string>>('questionTabsPlacement') ?? ref('top')
@@ -72,10 +74,10 @@ const PId = inject<number>('PId')
 const router = useRouter()
 const route = useRoute()
 // 左侧 LeftPane 中默认显示 题目描述 所在的选项卡
-const tabValue = ref('description')
+const tabValue = ref('')
 onMounted(() => {
     // 刷新页面后根据路由切换至对应的选项卡
-    tabValue.value = route.path.split('/')[2]
+    tabValue.value = route.path.split('/')[3]
 })
 /* 跳转至对应路由 */
 const toTab = (routerName: string) => {
@@ -127,6 +129,14 @@ const resize = () => {
 }
 .t-tabs__nav-item-text-wrapper {
     height: 35px !important;
+}
+.t-tabs__btn--right {
+    height: 35px !important;
+}
+.t-tabs__nav-container {
+    background-color: #FAFAFA !important;
+    outline: 0 solid transparent !important;
+    border: 0 solid transparent !important;
 }
 </style>
 <!--

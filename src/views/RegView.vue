@@ -60,7 +60,6 @@
                 </t-input-adornment>
 
                 <div class="sideInfo">
-                    <t-checkbox>记住登录</t-checkbox>
                     <t-link theme="primary" underline href="/login" target="_self">
                         已有账户，去登录 &nbsp; <JumpIcon />
                     </t-link>

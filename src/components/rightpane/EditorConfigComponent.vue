@@ -75,10 +75,7 @@
                         ></path>
                     </svg>
 
-                    <span
-                        class="runTipText"
-                        >{{ runText }}</span
-                    >
+                    <span class="runTipText">{{ runText }}</span>
                 </t-button>
             </t-tooltip>
         </div>
@@ -111,10 +108,7 @@
                             fill="#03BF80"
                         ></path>
                     </svg>
-                    <span
-                        class="submitTipText"
-                        >{{ submitText }}</span
-                    >
+                    <span class="submitTipText">{{ submitText }}</span>
                 </t-button>
             </t-tooltip>
         </div>
@@ -126,8 +120,8 @@
             <t-tooltip content="⚠️ 清空缓存会导致丢失数据">
                 <t-button theme="default" variant="text" style="font-size: 13px; color: #7a7a7a">
                     <UnhappyIcon
-                        style="color: #EA4C89; padding-top: 3px; margin-right: 3px"
-                        v-show="(!isStoreOrRecover && !isCoding)"
+                        style="color: #ea4c89; padding-top: 3px; margin-right: 3px"
+                        v-show="!isStoreOrRecover && !isCoding"
                     />
                     <CheckCircleIcon
                         style="color: #03bf80; padding-top: 3px; margin-right: 3px"
@@ -152,7 +146,7 @@
                         @click="visibleCenter = true"
                         shape="circle"
                     >
-                        <Setting1Icon />
+                        <Setting1Icon style="color: #7a7a7a" />
                     </t-button>
                 </t-tooltip>
             </t-space>
@@ -249,7 +243,7 @@
         <div style="margin-left: 5px">
             <t-tooltip content="格式化代码">
                 <t-button theme="default" variant="text" shape="circle" @click="codeFormat">
-                    <FormatVerticalAlignLeftIcon />
+                    <FormatVerticalAlignLeftIcon style="color: #7a7a7a" />
                 </t-button>
             </t-tooltip>
         </div>
@@ -263,7 +257,7 @@
             <div style="margin-left: 5px">
                 <t-tooltip content="重制为代码模版">
                     <t-button theme="default" variant="text" shape="circle">
-                        <RollfrontIcon />
+                        <RollfrontIcon style="color: #7a7a7a" />
                     </t-button>
                 </t-tooltip>
             </div>
@@ -273,8 +267,8 @@
         <div style="margin-left: 5px; margin-right: 20px">
             <t-tooltip :content="isDisplayFullScreenIcon ? '沉浸布局' : '恢复布局'">
                 <t-button theme="default" variant="text" shape="circle" @click="fullScreen">
-                    <Fullscreen1Icon v-show="isDisplayFullScreenIcon" />
-                    <FullscreenExit1Icon v-show="!isDisplayFullScreenIcon" />
+                    <Fullscreen1Icon style="color: #7a7a7a" v-show="isDisplayFullScreenIcon" />
+                    <FullscreenExit1Icon style="color: #7a7a7a" v-show="!isDisplayFullScreenIcon" />
                 </t-button>
             </t-tooltip>
         </div>
@@ -291,8 +285,18 @@ import {
     FullscreenExit1Icon,
     Edit2Icon,
     RollfrontIcon,
-    LightbulbIcon, UnhappyIcon
+    LightbulbIcon,
+    UnhappyIcon
 } from 'tdesign-icons-vue-next'
+import { MessagePlugin, NotifyPlugin } from 'tdesign-vue-next'
+import { useRoute } from 'vue-router'
+import {
+    type DebugSubmitRequest,
+    JudgeControllerService,
+    type JudgeSubmitRequest
+} from '../../../apis'
+import { utf8ToBase64 } from '@/utils/data-tackle'
+import { Base64 } from 'js-base64'
 
 /* 页面挂载时加载 Local Store 中的数据 ———— 防止刷新后的数据丢失 */
 onMounted(() => {
@@ -353,8 +357,8 @@ const LangOptions = [
     }
 ]
 const handleUpdateCurrentLang = (value: string) => {
-    emitLangUpdate()
     currentLang.value = value
+    emitLangUpdate()
 }
 const currentComponentInstance = getCurrentInstance()
 const emitLangUpdate = () => {
@@ -366,6 +370,9 @@ const emitLangUpdate = () => {
         currentEditorTheme.value
     ])
 }
+currentComponentInstance?.proxy?.$Bus.on('copy-code-to-editor', (langAndCode: any) => {
+    handleUpdateCurrentLang(langAndCode[0])
+})
 /*----------------------------------------------------------------------------------------*/
 
 /* 设置当前字体大小 */
@@ -443,13 +450,22 @@ const smartTipSwitch = async () => {
         isStartCurrentLangSmartTip.value = 1
     } else {
         isStartCurrentLangSmartTip.value = 0
+        await NotifyPlugin.info({
+            title: '已关闭智能模式',
+            content: '手撕代码, 沉浸式无提示干扰写代码',
+            placement: 'top-right'
+        })
     }
     // 向 MonacoEditor 发送是否开启智能提示
     currentComponentInstance?.proxy?.$Bus.emit('code-tip-switch', isStartCurrentLangSmartTip.value)
-    localStorage.setItem('code-tip', JSON.stringify(isStartCurrentLangSmartTip.value))
 }
+
+watch(isStartCurrentLangSmartTip, (n) => {
+    localStorage.setItem('code-tip', JSON.stringify(n))
+})
+
 // 接受 MonacoEditor 去开启智能提示的反馈信息
-// todo 加一个定义器, 防止超时无反馈
+// todo 加一个定时器, 防止超时无反馈
 currentComponentInstance?.proxy?.$Bus.on('switch-tip', (value: any) => {
     loadingStatus.value = false
     isStartCurrentLangSmartTip.value = value
@@ -559,7 +575,6 @@ int main () {
 }
 // 重制为代码模版
 const resetCodeTemplate = () => {
-    console.log('111')
     currentComponentInstance?.proxy?.$Bus.emit(
         'reset-code',
         adaptLangCodeTemplate(currentLang.value)
@@ -580,8 +595,8 @@ const submitText = ref<string>('提交')
 
 /* style control */
 const submitTextColor = ref<string>('#03BF80') // 运行时: #686868
-const runButtonPT = ref<string>('8px')  // 运行时 : 0
-const runButtonPR = ref<string>('5px')  // 运行时: 0
+const runButtonPT = ref<string>('8px') // 运行时 : 0
+const runButtonPR = ref<string>('5px') // 运行时: 0
 
 const runCodeButtonStyleChange = () => {
     runLoading.value = true
@@ -589,7 +604,7 @@ const runCodeButtonStyleChange = () => {
     runButtonPT.value = '0'
     runButtonPR.value = '0'
 }
-const runCodeButtonRecoverStyle =  () => {
+const runCodeButtonRecoverStyle = () => {
     runLoading.value = false
     runText.value = '运行'
     runButtonPT.value = '8px'
@@ -600,28 +615,142 @@ const submitCodeButtonStyleChange = () => {
     submitTextColor.value = '#686868'
     submitText.value = '判题中...'
 }
-const submitCodeButtonRecoverStyle =  () => {
+const submitCodeButtonRecoverStyle = () => {
     submitLoading.value = false
     submitTextColor.value = '#03BF80'
     submitText.value = '运行'
 }
 
-const runCodeRequest = () => {
-    runCodeButtonStyleChange()
-    setTimeout(() => {
-        // todo 运行代码
-        runCodeButtonRecoverStyle()
-    }, 2000)
-}
-const submitCodeRequest = () => {
-    submitCodeButtonStyleChange()
-    setTimeout(() => {
-        // todo 提交代码
-        submitCodeButtonRecoverStyle()
-    }, 2000)
-}
+const currentCode = ref<string>('')
+const currentTestCases = ref<string[]>([])
+const route = useRoute()
+const PId = route.params.PId
+const UId = ref<number>(0)
 
 
+const runCodeRequest = async () => {
+    // 去本地获取自定义测试用例
+    UId.value = Number(localStorage.getItem('current-login-uid')) ?? 0
+    currentCode.value =
+        JSON.parse(
+            <string>localStorage.getItem(`code-value-${PId}-${UId.value}-${currentLang.value}`)
+        )?.code ?? ''
+    currentTestCases.value =
+        JSON.parse(<string>localStorage.getItem(`test-case-${PId}-${UId.value}`)) ?? []
+    if (currentCode.value == '') {
+        await MessagePlugin.warning({
+            content: '请输入代码'
+        })
+    } else if (currentTestCases.value.length == 0) {
+        await MessagePlugin.warning({
+            content: '请输入测试用例'
+        })
+    } else {
+        runCodeButtonStyleChange()
+        currentComponentInstance?.proxy?.$Bus.emit('debug-tabs', 2)
+        const timeoutPromise = new Promise((resolve, reject) => {
+            // 设置超时时间为8秒
+            setTimeout(() => {
+                reject(new Error('超时'))
+            }, 8000)
+        })
+
+
+        const debugTask = JudgeControllerService.multiTestCaseDebug({
+            problemId: Number(PId),
+            testCases: currentTestCases.value.map((e, index) => {
+                return { id: parseInt(String(index)) + 1, input: btoa(e), correctResult: '' }
+            }),
+            code: Base64.encode(currentCode.value),
+            language: currentLang.value
+        } as DebugSubmitRequest)
+
+        // 竞争
+        await Promise.race([debugTask, timeoutPromise])
+            .then((res: any) => {
+                if (res.statusCode === 0) {
+                    currentComponentInstance?.proxy?.$Bus.emit('debug-code', res.data)
+                } else {
+                    MessagePlugin.error({
+                        content: res.description
+                    })
+                }
+            })
+            .catch((err) => {
+                if (err.message === '超时') {
+                    MessagePlugin.error({
+                        content: '评测机任务过载, 请稍后重试!!!'
+                    })
+                } else {
+                    MessagePlugin.error({
+                        content: err.message
+                    })
+                }
+            })
+            .finally(() => {
+                runCodeButtonRecoverStyle()
+            })
+    }
+}
+const submitCodeRequest = async () => {
+    // 从本地获取代码
+    UId.value = Number(localStorage.getItem('current-login-uid')) ?? 0
+    currentCode.value =
+        JSON.parse(
+            <string>localStorage.getItem(`code-value-${PId}-${UId.value}-${currentLang.value}`)
+        )?.code ?? ''
+    if (currentCode.value == '') {
+        await MessagePlugin.warning({
+            content: '请输入代码'
+        })
+    } else if (UId.value == 0) {
+        await MessagePlugin.error({
+            content: '请先登录'
+        })
+    } else {
+        submitCodeButtonStyleChange()
+        currentComponentInstance?.proxy?.$Bus.emit('debug-tabs', 3)
+        // 设置超时时间为15秒
+        const timeoutPromise = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject(new Error('超时'))
+            }, 15000)
+        })
+
+        const judgeTask = JudgeControllerService.judgeCode({
+            userId: Number(UId.value),
+            problemId: Number(PId),
+            code: Base64.encode(currentCode.value),
+            language: currentLang.value
+        } as JudgeSubmitRequest)
+
+        await Promise.race([judgeTask, timeoutPromise])
+            .then((res: any) => {
+                console.log(res)
+                if (res.statusCode === 0) {
+                    currentComponentInstance?.proxy?.$Bus.emit('judge-code', res.data)
+                } else {
+                    MessagePlugin.error({
+                        content: res.description
+                    })
+                }
+            })
+            .catch((err) => {
+                if (err.message === '超时') {
+                    MessagePlugin.error({
+                        content: '评测机任务过载, 请稍后重试!!!'
+                    })
+                } else {
+                    MessagePlugin.error({
+                        content: err.message
+                    })
+                }
+            })
+            .finally(() => {
+                submitCodeButtonRecoverStyle()
+            })
+    }
+}
 </script>
 <style>
 .tdesign-demo__select-input-ul-auto-width {

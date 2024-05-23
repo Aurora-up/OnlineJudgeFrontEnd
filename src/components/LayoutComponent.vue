@@ -24,5 +24,6 @@ import NavComponent from '@/components/NavComponent.vue'
 }
 #header {
     height: 44px;
+    border-bottom: 1px solid #EBEBEB;
 }
 </style>

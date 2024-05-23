@@ -6,7 +6,7 @@
                 {{ codeTest }}
             </template>
             <div class="runTab" @dblclick="stopPropagationEvent">
-                <TestCase></TestCase>
+                <TestCase v-if="TabValue == 'first'"></TestCase>
             </div>
         </t-tab-panel>
         <t-tab-panel value="second">
@@ -15,49 +15,30 @@
                 {{ codeTestResult }}
             </template>
             <div class="runTab" @dblclick="stopPropagationEvent">
-                <TestCaseResult></TestCaseResult>
+                <TestCaseResult v-if="TabValue == 'second'" :isDebugging="isDebugging"></TestCaseResult>
             </div>
         </t-tab-panel>
-        <t-tab-panel value="three">
+        <t-tab-panel value="third">
             <template #label>
                 <CalendarIcon class="tabs-icon-margin" />
                 {{ codeResult }}
             </template>
-            <div @dblclick="stopPropagationEvent" class="resultContainer">
-                <div class="resultHeader">
-                    <h2 class="resultTitle">Accept</h2>
-                    <div class="resultAttachInfo"><TimeIcon class="attachIcon" /> 运行时间: {{runTime}} ms</div>
-                    <div class="resultAttachInfo"><CpuIcon class="attachIcon" /> 占用内存: {{runMemory}} K</div>
-                </div>
-                <div class="resultContent">
-                    <MdPreview
-                        previewTheme="github"
-                        editorId="preview-only"
-                        :modelValue="resultContent"
-                    />
-                </div>
+            <div class="runTab" @dblclick="stopPropagationEvent">
+                <JudgeResult v-if="TabValue == 'third'" :isJudging="isJudging"></JudgeResult>
             </div>
-
         </t-tab-panel>
     </t-tabs>
 </template>
 <script setup lang="ts">
-import { ref, inject, type Ref, watch } from 'vue'
-import { CalendarIcon, CpuIcon, TerminalIcon, TimeIcon } from 'tdesign-icons-vue-next'
-import { MdPreview } from 'md-editor-v3'
+import { ref, inject, type Ref, watch, getCurrentInstance } from 'vue'
+import { CalendarIcon } from 'tdesign-icons-vue-next'
 import TestCase from '@/components/rightpane/TestCase.vue'
 import TestCaseResult from '@/components/rightpane/TestCaseResult.vue'
+import JudgeResult from '@/components/rightpane/JudgeResult.vue'
+const currentComponentInstance = getCurrentInstance()
 
 const CodeResultHeightVH = inject<Ref<string>>('CodeResultHeightVH')
 const codeResultHeightVH = ref(CodeResultHeightVH)
-
-const runTime = ref<number>(35)
-const runMemory = ref<number>(32756)
-const runInfo = ref<string>('测试提交结果输出');
-const resultContent = ref<string>(`\`\`\`
-${runInfo.value}
-\`\`\``)
-
 
 
 /* 获取 Tabs 位置 */
@@ -78,7 +59,25 @@ watch(placement, (newPlacement) => {
 })
 
 const TabValue = ref('first')
+const isDebugging = ref(false);
+const isJudging = ref(false)
 
+currentComponentInstance?.proxy?.$Bus.on('debug-tabs', (tabValue) => {
+    if (Number(tabValue) == 2) {
+        TabValue.value = 'second'
+        isDebugging.value = true
+    } else if (Number(tabValue) == 3) {
+        TabValue.value = 'third'
+        isJudging.value = true
+    }
+})
+currentComponentInstance?.proxy?.$Bus.on('debugging', (data) => {
+    isDebugging.value = Boolean(data)
+})
+
+currentComponentInstance?.proxy?.$Bus.on('running', (data) => {
+    isJudging.value = Boolean(data)
+})
 
 const handlerChange = (newValue: string) => {
     TabValue.value = newValue
@@ -115,6 +114,20 @@ const stopPropagationEvent = (event: Event) => {
     padding-right: 25px;
     padding-top: 20px;
 }
+.runTab::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgb(193, 193, 193);
+    background-color: #f5f5f5;
+    border-radius: 10px;
+}
+.runTab::-webkit-scrollbar {
+    width: 6px;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+}
+.runTab::-webkit-scrollbar-thumb {
+    background-color: #C1C1C1;
+    border-radius: 10px;
+}
 
 .submitPane {
     overflow: auto;
@@ -130,27 +143,6 @@ const stopPropagationEvent = (event: Event) => {
     min-width: 40%;
 }
 
-.resultContainer {
-    padding-left: 15px;
-    padding-bottom: 2px;
-    padding-right: 15px;
-    overflow: auto;
-    height: v-bind(codeResultHeightVH);
-}
-.resultHeader {
-    display: flex;
-    flex-wrap: wrap;
-}
-.resultTitle {
-    padding-left: 23px;
-    color: #2fb55d;
-    font-size: 24px;
-}
-.resultAttachInfo {
-    padding-left: 20px;
-    padding-top: 25px;
-    color: #8A8A8E;
-}
 .attachIcon {
     padding-bottom: 2px;
 }

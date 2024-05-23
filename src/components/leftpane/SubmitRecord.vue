@@ -1,205 +1,228 @@
 <template>
-    <t-collapse @dblclick="stopPropagationEvent">
-        <t-collapse-panel
-            :key="index"
-            v-for="(item, index) in submitData"
-            :header="`提交时间: ${item.time}`"
-        >
-            <template #headerRightContent>
-                <t-space size="small">
-                    <t-tag :theme="item.state" variant="light" size="large">{{ item.desc }}</t-tag>
-                </t-space>
-            </template>
-            <div style="overflow: auto" class="submit-code-contain">
-                <t-space style="margin-bottom: 15px">
-                    通过了: {{ item.acceptData }}/10 个数据
-                    <t-divider layout="vertical" />
-                    运行总时间: {{ item.runningTime }}
-                    <t-divider layout="vertical" />
-                    峰值内存占用: {{ item.runningSpace }}
-                </t-space>
-                <!--          <n-code :code="item.code" show-line-numbers  />-->
-                <MdPreview
-                    previewTheme="github"
-                    editorId="preview-only"
-                    :modelValue="prefix + item.lang + '\n' + item.code + postfix"
-                />
-            </div>
-        </t-collapse-panel>
-    </t-collapse>
+    <div class="submitRecord">
+        <div v-show="!userInfoStore.$state.isLogin" class="noLogin">
+            <span style="color: #c4c4c6; font-size: 15px; ">请先登录才可查看提交记录</span>
+            <t-divider layout="vertical" />
+            <t-tooltip content="去登录">
+                <t-button theme="primary" @click="toLogin('Login')">
+                    登录
+                </t-button>
+            </t-tooltip>
+        </div>
+
+        <div v-show="isHaveSubmission" class="noLogin">
+            <span style="color: #c4c4c6; font-size: 15px; ">暂无提交记录</span>
+        </div>
+
+        <t-collapse @dblclick="stopPropagationEvent" v-show="userInfoStore.$state.isLogin" expandIconPlacement="right" borderless>
+            <t-collapse-panel
+                :key="index"
+                v-for="(item, index) in submissions"
+            >
+                <template #header>
+                    <TimeIcon class="__timeIcon" style="color: #7A7A7A" /> <span style="color: #7A7A7A">{{item.judgeResult?.submitTime}}</span>
+                </template>
+                <template #headerRightContent>
+                    <t-space size="small">
+                        <t-tag
+                            :theme="getStatus(item.judgeResult?.resultStatus ?? 1000)"
+                            variant="light"
+                            size="medium"
+                        >
+                            {{ getDesc(item.judgeResult?.resultStatus ?? 1000) }}
+                        </t-tag>
+                    </t-space>
+                </template>
+                <div style="overflow: auto" class="submit-code-contain">
+                    <t-space>
+                        通过了: {{ item.judgeResult?.passTestCasesNumber == null ? 0 : item.judgeResult?.passTestCasesNumber }}/{{
+                            item.testCasesNumber
+                        }}
+                        个数据
+                        <t-divider layout="vertical" />
+                        运行总时间: {{ tackleTime(Number(item.judgeResult?.time)) }}
+                        <t-divider layout="vertical" />
+                        峰值内存占用: {{ tackleMemory(Number(item.judgeResult?.memory)) }}
+                        <t-tooltip content="代码复制至编辑器">
+                            <t-button
+                                shape="circle"
+                                variant="outline"
+                                class="submitCodeToEditor"
+                                @click="copyCodeToEditor(item.lang ?? '', item.code ?? '')"
+                            >
+                                <ChevronRightDoubleIcon slot="icon" class="copyIcon" />
+                            </t-button>
+                        </t-tooltip>
+                    </t-space>
+                    <!--          <n-code :code="item.code" show-line-numbers  />-->
+                    <MdPreview
+                        previewTheme="github"
+                        editorId="preview-only"
+                        :modelValue="prefix + item.lang + '\n' + getCode(item.code ?? '') + postfix"
+                    />
+                </div>
+            </t-collapse-panel>
+        </t-collapse>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted, ref } from 'vue'
+import { computed, getCurrentInstance, inject, onMounted, ref, toRef } from 'vue'
 import { MdPreview } from 'md-editor-v3'
+import {
+    ProblemSubmitControllerService,
+    type ProblemSubmitRecordQueryResponse
+} from '../../../apis'
+import { UserInfoStore } from '@/stores/user-info'
+import { MessagePlugin } from 'tdesign-vue-next'
+import { useRouter } from 'vue-router'
+import { ChevronRightDoubleIcon, TimeIcon } from 'tdesign-icons-vue-next'
+import { base64ToUtf8, tackleMemory, tackleTime } from '@/utils/data-tackle'
+import { Base64 } from 'js-base64';
 
-const PID = ref<number>(0)
 const PId = inject<number>('PId')
-onMounted(() => {
-    PID.value = PId ?? 0
-})
+const PID = ref<number>(0)
+const userInfoStore = UserInfoStore()
+const submissions = ref<Array<ProblemSubmitRecordQueryResponse>>()
+const isHaveSubmission = ref<boolean>(false)
+
+
+const mp = new Map<number, string>()
+mp.set(1000, '')
 
 const prefix = '```'
 const postfix = '\n```'
 
-/* 模拟数据 */
-const submitData = [
-    {
-        time: '2024.1.25 15:12:44',
-        runningTime: '13ms',
-        runningSpace: '216KB',
-        acceptData: 10,
-        lang: 'java',
-        state: 'success',
-        desc: 'Accept',
-        code: `import java.io.*;
-public class Main{
-  public static void main(String[] args) throws IOException{
-    var in = new BufferedReader(new InputStreamReader(System.in));
-    var out = new PrintWriter(new OutputStreamWriter(System.out));
-    String[] str1 = in.readLine().split(" ");
-    int a = Integer.parseInt(str1[0]);
-    int b = Integer.parseInt(str1[1]);
-    out.print(a + b);
-    out.flush();
-    out.close();
-    in.close();
-  }
-}`
-    },
-    {
-        time: '2024.1.25 15:02:32',
-        lang: 'java',
-        runningTime: '1400ms',
-        runningSpace: '2MB',
-        acceptData: 7,
-        state: 'warning',
-        desc: 'Time Limit Exceeded',
-        code: `import java.util.Scanner;
-public class Main {
-  public static void main(String[] args) {
-    Scanner scanner = new Scanner(System.in);
-    int A = scanner.nextInt();
-    int B = scanner.nextInt();
-    int sum = A + B;
-    System.out.println(sum);
-    scanner.close();
-  }
-}
-`
-    },
-    {
-        time: '2024.1.25 15:02:32',
-        lang: 'java',
-        runningTime: '1400ms',
-        runningSpace: '2MB',
-        acceptData: 7,
-        state: 'warning',
-        desc: 'Memory Limit Exceeded',
-        code: `import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.List;
-
-public class Main {
-  public static void main(String[] args) {
-    List<byte[]> memoryList = new ArrayList<>();
-    // 无限分配
-      while (true) {
-        byte[] memoryChunk = new byte[1024 * 1024];
-        memoryList.add(memoryChunk);
-      }
-  }
-}
-`
-    },
-    {
-        time: '2024.1.25 15:21:44',
-        runningTime: '13ms',
-        runningSpace: '216KB',
-        acceptData: 10,
-        lang: 'java',
-        state: 'warning',
-        desc: 'Presentation Error',
-        code: `import java.io.*;
-public class Main{
-  public static void main(String[] args) throws IOException{
-    var in = new BufferedReader(new InputStreamReader(System.in));
-    var out = new PrintWriter(new OutputStreamWriter(System.out));
-    String[] str1 = in.readLine().split(" ");
-    int a = Integer.parseInt(str1[0]);
-    int b = Integer.parseInt(str1[1]);
-    out.print(a + '\n' + b);
-    out.flush();
-    out.close();
-    in.close();
-  }
-}`
-    },
-    {
-        time: '2024.1.25 15:19:44',
-        runningTime: '13ms',
-        runningSpace: '216KB',
-        acceptData: 10,
-        lang: 'java',
-        state: 'danger',
-        desc: 'Wrong Answer',
-        code: `import java.io.*;
-public class Main{
-  public static void main(String[] args) throws IOException{
-    var in = new BufferedReader(new InputStreamReader(System.in));
-    var out = new PrintWriter(new OutputStreamWriter(System.out));
-    String[] str1 = in.readLine().split(" ");
-    int a = Integer.parseInt(str1[0]);
-    int b = Integer.parseInt(str1[1]);
-    out.print(a - b);
-    out.flush();
-    out.close();
-    in.close();
-  }
-}`
-    },
-    {
-        time: '2024.1.25 15:00:01',
-        lang: 'java',
-        runningTime: 'N/A',
-        runningSpace: 'N/A',
-        acceptData: 0,
-        state: 'danger',
-        desc: 'Runtime Error',
-        code: `public class Main{
-  public static void main(String[] args) {
-    int i = 5 / 0 ;
-  }
-}`
-    },
-    {
-        time: '2024.1.25 15:11:01',
-        lang: 'java',
-        runningTime: 'N/A',
-        runningSpace: 'N/A',
-        acceptData: 0,
-        state: 'danger',
-        desc: 'Compile Error',
-        code: `public class Test{
-  public static void main(String[] args) {
-
-  }
-}`
+const getStatus = (status: number) => {
+    if (status === 1000) {
+        return 'success'
+    } else if (status === 1003 || status === 1004 || status === 1006) {
+        return 'warning'
+    } else {
+        return 'danger'
     }
-]
-const stopPropagationEvent = (event: Event) => {
-    event.stopPropagation();
+}
+const getDesc = (status: number) => {
+    switch (status) {
+        case 1:
+            return 'Permission Deny'
+        case 500:
+            return 'Judge System Error'
+        case 1000:
+            return 'Accepted'
+        case 1001:
+            return 'Compile Error'
+        case 1002:
+            return 'Runtime Error'
+        case 1003:
+            return 'Time Limit Exceeded'
+        case 1004:
+            return 'Memory Limit Exceeded'
+        case 1005:
+            return 'Wrong Answer'
+        case 1006:
+            return 'Presentation Error'
+    }
+}
+const getCode = (code: string) => {
+    return Base64.decode(code) // Base64 解码
 }
 
-// todo 从后端请求来 提交记录
+const router = useRouter()
+const toLogin = (routerName: string) => {
+    router.replace({
+        name: routerName
+    })
+}
 
-// todo 将提交记录存到 localstore
+onMounted(async () => {
+    PID.value = PId ?? 0
+    if (!userInfoStore.$state.isLogin) {
+        await userInfoStore.getLoginUserInfo()
+    }
+    await ProblemSubmitControllerService.getProblemSubmissionByPIdAndUId(
+        PID.value,
+        userInfoStore.$state.loginUserInfo.userId
+    )
+    .then((res) => {
+        if (res.statusCode === 0) {
+            submissions.value = res.data
+        } else if (res.statusCode == 40004) {
+            isHaveSubmission.value = true
+            MessagePlugin.warning({
+                content: '暂无提交记录'
+            })
+        } else {
+            MessagePlugin.warning({
+                content: res.description
+            })
+        }
+    })
+    .catch((e) => {
+        MessagePlugin.error({
+            content: e?.message
+        })
+    })
 
-// todo 每提交一次, 先存到 localstore
+})
+
+
+const currentComponentInstance = getCurrentInstance()
+const copyCodeToEditor = (lang: string, code: string) => {
+    currentComponentInstance?.proxy?.$Bus.emit('copy-code-to-editor', [lang,code])
+}
+
+const stopPropagationEvent = (event: Event) => {
+    event.stopPropagation()
+}
 </script>
 
-<style scoped>
+<style>
+.t-collapse-panel__wrapper{
+    transition: background-color 0.3s ease !important;
+}
+.t-collapse-panel__wrapper:hover {
+    /* 使用渐变效果创建更吸引人的过渡 */
+    background: #E8E8E8 !important;
+    cursor: pointer !important;
+}
 .submit-code-contain {
-    background-color: #f2f2f2;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.submitRecord {
+    overflow: auto;
+    height: 90vh;
+}
+.submitRecord::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgb(193, 193, 193);
+    background-color: #f5f5f5;
+    border-radius: 10px;
+}
+.submitRecord::-webkit-scrollbar {
+    width: 6px;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+}
+.submitRecord::-webkit-scrollbar-thumb {
+    background-color: #C1C1C1;
+    border-radius: 10px;
+}
+.noLogin {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 90vh;
+}
+.__timeIcon {
+    margin-right: 3px;
+    color: #7A7A7A
+}
+.submitCodeToEditor {
+    margin-right: 10px;
 }
 </style>

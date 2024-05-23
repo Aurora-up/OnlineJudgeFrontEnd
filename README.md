@@ -1,46 +1,43 @@
-# onlineJudgeFrontEnd
+# Aurora Online Judge Front End
+Aurora OJ 是我的本科毕设 —— OJ 系统的前端实现，采用 Vue.js 框架和 [Tdesign](https://tdesign.tencent.com/) 和 [NativeUI](https://www.naiveui.com/zh-CN/os-theme) 搭建，由于时间有限，仅实现核心功能页面，具体实现的页面有： 
 
-This template should help get you started developing with Vue 3 in Vite.
+- 做题页面 
 
-## Recommended IDE Setup
+  - 题目描述页 (基于 md-editor-v3 实现) 
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+  - 代码编辑器 (基于微软开源的 Monaco Editor 实现, 结合 LSP 实现 C,C++,Rust,Python,Java五种语言的代码智能提示)
 
-## Type Support for `.vue` Imports in TS
+  - 自定义多测试用例和测试结果显示页 (模仿 [LeetCode]() 的同样功能功能实现)
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+- 题解页
+- 笔记页
+- 提交记录页
+- 题目搜索页
+- 个人信息页
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+### 具体效果图
 
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+![image-20240523112135252](./readme-image/image-20240523112135252.png)
 
-## Customize configuration
+![image-20240523112858881](./readme-image/image-20240523112858881.png)
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+![image-20240523113126883](./readme-image/image-20240523113126883.png)
 
-## Project Setup
+![image-20240523113006027](./readme-image/image-20240523113006027.png)
 
-```sh
-npm install
-```
+![image-20240523113047637](./readme-image/image-20240523113047637.png)
 
-### Compile and Hot-Reload for Development
+### 搭建环境要求：
 
-```sh
-npm run dev
-```
+- Node.js 20 +
+- nom 10 +
+- 相关编程语言的 Language Server
 
-### Type-Check, Compile and Minify for Production
+| Language |                       Language Server                        |                  Maintainer                  |
+| :------: | :----------------------------------------------------------: | :------------------------------------------: |
+|    C     | [clangd](https://github.com/llvm/llvm-project/tree/main/clang-tools-extra/clangd) |                 LLVM Project                 |
+|   C++    | [clangd](https://github.com/llvm/llvm-project/tree/main/clang-tools-extra/clangd) |                 LLVM Project                 |
+|   Java   | [Eclipse JDT LS](https://github.com/eclipse-jdtls/eclipse.jdt.ls) |                   Eclipse                    |
+|   Rust   | [rust-analyzer](https://github.com/rust-lang/rust-analyzer)  | [Aleksey Kladov](https://github.com/matklad) |
+| Python3  |        [pright](https://github.com/microsoft/pyright)        |                  Microsoft                   |
 
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```

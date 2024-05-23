@@ -28,14 +28,12 @@ import {
 } from '@codingame/monaco-vscode-files-service-override'
 import * as vscode from 'vscode'
 import { MonacoEditorCodeStoreDir } from '@/client/config'
-import { NotifyPlugin } from 'tdesign-vue-next'
 
 export default {
     name: 'MonacoEditor',
     props: editorProps,
     emits: ['update-codeValue', 'on-code-blur'],
     setup(props, { emit }) {
-
         /* Monaco Editor 加载需要的元信息 */
         const LangConfig = ref<LangConfig>()
         LangConfig.value = adaptLangConfig(props.lang)
@@ -51,28 +49,30 @@ export default {
         })
 
         /* Monaco Editor 创建后的一些实例 */
-        let editor: IStandaloneCodeEditor    // 编辑器本身
+        let editor: IStandaloneCodeEditor // 编辑器本身
         let modelRef: IReference<ITextFileEditorModel> // Monaco Editor 重要概念之一: Model
         let webSocket: WebSocket // 连接 LSP 服务的 WebSocket
-        let fileSystemProvider: RegisteredFileSystemProvider; // 文件系统
+        let fileSystemProvider: RegisteredFileSystemProvider // 文件系统
 
         /* 接受 EditorConfig 的消息去重制为模版代码 */
         const currentComponentInstance = getCurrentInstance()
         currentComponentInstance?.proxy?.$Bus.on('reset-code', (templateCode: any) => {
-            console.log(templateCode)
             if (editor) {
                 editor.setValue(templateCode)
             }
         })
 
         /* 智能提示是否开启 */
-        const isSwitchSmartTip = ref<number>(0); // 0 是不开启, 1 是开启
-        const isStartTip =  localStorage.getItem('code-tip');
+        const isSwitchSmartTip = ref<number>(0) // 0 是不开启, 1 是开启
+        let isStartTip = localStorage.getItem('code-tip')
         if (isStartTip != null) {
-            isSwitchSmartTip.value = Number(isStartTip);
+            isSwitchSmartTip.value = Number(isStartTip)
         }
         currentComponentInstance?.proxy?.$Bus.on('code-tip-switch', (SwitchSmartTip: any) => {
             isSwitchSmartTip.value = SwitchSmartTip
+        })
+        currentComponentInstance?.proxy?.$Bus.on('copy-code-to-editor', (langAndCode: any) => {
+            editor.setValue(atob(langAndCode[1]))
         })
 
         /* 初始化编辑器函数 */
@@ -89,7 +89,7 @@ export default {
                     })
                     editor = monacoEditor.editor
                     modelRef = monacoEditor.modelRef
-                    fileSystemProvider = monacoEditor.fileSystemProvider;
+                    fileSystemProvider = monacoEditor.fileSystemProvider
 
                     /* 更新 monaco editor 的配置 */
                     await updateUserConfiguration(`{
@@ -108,7 +108,7 @@ export default {
                     }
 
                     /* 只有开启智能提示开关后才去加载 LSP 服务 */
-                    if (isSwitchSmartTip.value == 1) {
+                    if (isSwitchSmartTip.value == 1 && currentComponentInstance) {
                         const url = createUrl(
                             editorRunConfig.value.clientUrl,
                             editorRunConfig.value.serverPort,
@@ -118,10 +118,14 @@ export default {
                             },
                             false
                         )
-                        webSocket = initWebSocketAndStartClient(url, props.lang)
+                        webSocket = initWebSocketAndStartClient(
+                            url,
+                            props.lang,
+                            currentComponentInstance
+                        )
                     }
 
-                    editor.setValue(props.codeValue)  // 设置当前编辑器的代码
+                    editor.setValue(props.codeValue) // 设置当前编辑器的代码
 
                     /* 为编辑器添加一些事件感知 */
                     // 监听用户输入代码的改变, 将其传至父组件
@@ -143,20 +147,15 @@ export default {
             })()
         }
 
-/*------------------------------------------------------------------------------------------------------------------------*/
+        /*------------------------------------------------------------------------------------------------------------------------*/
 
         /* 编辑已经加载完毕后, 动态感知是否去开启智能提示 */
         watch(isSwitchSmartTip, (n) => {
-            if (n == 0 && webSocket) { // 关闭智能模式
+            if (n == 0 && webSocket) {
+                // 关闭智能模式
                 webSocket.close()
                 currentComponentInstance?.proxy?.$Bus.emit('switch-tip', 0)
-                NotifyPlugin.info({
-                    title: '已关闭智能模式',
-                    content: '手撕代码, 沉浸式无提示干扰写代码',
-                    placement: 'top-right'
-                })
-            }
-            else {
+            } else {
                 const langConfig = adaptLangConfig(props.lang)
                 const url = createUrl(
                     editorRunConfig.value.clientUrl,
@@ -167,17 +166,20 @@ export default {
                     },
                     false
                 )
-                webSocket = initWebSocketAndStartClient(url, props.lang)
-                currentComponentInstance?.proxy?.$Bus.emit('switch-tip', 1)
-                NotifyPlugin.success({
-                    title: '已开启智能模式',
-                    content: '快速补全、静态分析, 助力你AC题目',
-                    placement: 'top-right'
-                })
+                if (currentComponentInstance) {
+                    webSocket = initWebSocketAndStartClient(
+                        url,
+                        props.lang,
+                        currentComponentInstance
+                    )
+                    webSocket.onclose = async () => {
+                        isSwitchSmartTip.value = 0
+                        currentComponentInstance?.proxy?.$Bus.emit('switch-tip', 0)
+                    }
+                }
             }
         })
         /*----------------------------------------------------------------------------------------*/
-
 
         /* 切换语言时更新相关配置 */
         watch(
@@ -191,7 +193,9 @@ export default {
                     modelRef.dispose() // 防止缓存导致的错误
                 }
                 // 防止文件系统缓存导致的错误
-                await fileSystemProvider.delete(vscode.Uri.file(`${MonacoEditorCodeStoreDir}/${adaptLangFileName(oldLang)}`))
+                await fileSystemProvider.delete(
+                    vscode.Uri.file(`${MonacoEditorCodeStoreDir}/${adaptLangFileName(oldLang)}`)
+                )
 
                 if (editor) {
                     const langConfig = adaptLangConfig(newLang)
@@ -223,20 +227,21 @@ export default {
                             },
                             false
                         )
-                        if (isSwitchSmartTip.value == 1) {
-                            webSocket = initWebSocketAndStartClient(url, newLang)
+                        if (isSwitchSmartTip.value == 1 && currentComponentInstance) {
+                            webSocket = initWebSocketAndStartClient(
+                                url,
+                                newLang,
+                                currentComponentInstance
+                            )
                         }
-
                         /* 编辑器当前状态感知 */
-                        let storeStatus: number = 0;
-                        if (props.codeValue != '') { // 已从本地恢复存储的代码
-                            storeStatus = 1;
+                        let storeStatus: number = 0
+                        if (props.codeValue != '') {
+                            // 已从本地恢复存储的代码
+                            storeStatus = 1
                         }
                         // 将当前状态反馈至 Editor Config 中
-                        currentComponentInstance?.proxy?.$Bus.emit('on-editor-blur', [
-                            storeStatus
-                        ])
-
+                        currentComponentInstance?.proxy?.$Bus.emit('on-editor-blur', [storeStatus])
                     } catch (error) {
                         console.error('语言切换失败: ', error)
                     }
@@ -244,7 +249,6 @@ export default {
             }
         )
         /*----------------------------------------------------------------------------------------*/
-
 
         /* 更新 monaco editor 的相关配置 */
         watch(
@@ -285,7 +289,7 @@ export default {
             }
         })
 
-/*------------------------------------------------------------------------------------------------------------------------*/
+        /*------------------------------------------------------------------------------------------------------------------------*/
         /* 组件挂载时加载 Monaco Editor */
         onMounted(() => {
             InitEditor()
@@ -300,9 +304,11 @@ export default {
                 modelRef.dispose()
             }
             editor.dispose()
-            await fileSystemProvider.delete(vscode.Uri.file(`${MonacoEditorCodeStoreDir}/${adaptLangFileName(props.lang)}`),)
+            await fileSystemProvider.delete(
+                vscode.Uri.file(`${MonacoEditorCodeStoreDir}/${adaptLangFileName(props.lang)}`)
+            )
         })
-/*------------------------------------------------------------------------------------------------------------------------*/
+        /*------------------------------------------------------------------------------------------------------------------------*/
         return { codeEditor, codeHeightVH }
     }
 }

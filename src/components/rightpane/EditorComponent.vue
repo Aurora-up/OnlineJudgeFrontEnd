@@ -12,13 +12,6 @@
                 </keep-alive>
             </div>
         </t-tab-panel>
-        <t-tab-panel value="second">
-            <template #label>
-                <t-icon name="chat-poll" class="tabs-icon-margin" />
-                {{ problemAI }}
-            </template>
-            <p style="padding: 25px">Chatgpt</p>
-        </t-tab-panel>
     </t-tabs>
 </template>
 <script setup lang="ts">
@@ -30,14 +23,11 @@ import MonacoCodeEditor from '@/components/rightpane/MonacoCodeEditor.vue'
 const placement: Ref<string> = inject<Ref<string>>('editorTabsPlacement') ?? ref('top')
 
 const problemCode = ref<string>('代码')
-const problemAI = ref<string>('AI')
 watch(placement, (newPlacement) => {
     if (newPlacement == 'right') {
         problemCode.value = ''
-        problemAI.value = ''
     } else {
         problemCode.value = '代码'
-        problemAI.value = 'AI'
     }
 })
 

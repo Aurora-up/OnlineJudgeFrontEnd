@@ -15,13 +15,13 @@
                     <LoginIcon size="22px" style="padding-top: 18px" />
                     <h2>&nbsp;登录</h2>
                 </div>
-                <t-input-adornment prepend="用户名">
+                <t-input-adornment prepend="账 号">
                     <t-input
                         class="input-style"
-                        placeholder="请输入用户名"
+                        placeholder="请输入账号"
                         :clearable="true"
                         size="large"
-                        v-model="userNameValue"
+                        v-model="userCountValue"
                         :tips="userNameTip"
                         :status="userNameInputState"
                         @blur="checkUsername1"
@@ -29,7 +29,7 @@
                     />
                 </t-input-adornment>
                 <div style="height: 2px"></div>
-                <t-input-adornment prepend="密码🔒">
+                <t-input-adornment prepend="密 码">
                     <t-input
                         class="input-style"
                         placeholder="请输入密码"
@@ -72,6 +72,8 @@ import { ref } from 'vue'
 import { MessagePlugin } from 'tdesign-vue-next'
 import { LoginIcon } from 'tdesign-icons-vue-next'
 import { useRouter } from 'vue-router'
+import { UserInfoStore } from '@/stores/user-info'
+import { type LoginUserVO, UserControllerService } from '../../apis'
 
 const currentDate = new Date()
 
@@ -79,24 +81,23 @@ const year = currentDate.getFullYear()
 const month = currentDate.getMonth() + 1 // 月份从0开始，所以需要加1
 const day = currentDate.getDate()
 
-const userNameValue = ref<string>('')
+const userCountValue = ref<string>('')
 const userNameTip = ref<string>('')
 const userNameInputState = ref<string>('default')
 
-// 用户名输入框失去焦点时触发, 提示用户
+// 账号输入框失去焦点时触发, 提示用户
 const checkUsername1 = () => {
-    if (userNameValue.value == '') {
+    if (userCountValue.value == '') {
         userNameInputState.value = 'error'
-        userNameTip.value = '用户名为空'
+        userNameTip.value = '账号为空'
     }
 }
-// 用户名输入框输入时触发, 提示用户
+// 账号输入框输入时触发, 提示用户
 const checkUsername2 = () => {
-    if (userNameValue.value != '') {
+    if (userCountValue.value != '') {
         userNameInputState.value = 'default'
         userNameTip.value = ''
     }
-    console.log(userNameValue.value)
 }
 
 const passwordValue = ref<string>('')
@@ -114,24 +115,53 @@ const checkPassword2 = () => {
         passwordInputState.value = 'default'
         passwordTip.value = ''
     }
-    console.log(passwordValue.value)
 }
 
 const router = useRouter()
+const store = UserInfoStore()
 
 // 校验登录
-const checkLogin = () => {
-    // 1. 用户名或密码为空
-    if (userNameValue.value == '' || passwordValue.value == '') {
-        MessagePlugin.warning({
-            content: '用户名或密码为空'
+const checkLogin = async () => {
+    // 1. 账号或密码为空
+    if (userCountValue.value == '' || passwordValue.value == '') {
+        await MessagePlugin.warning({
+            content: '账号或密码为空'
         })
         return
     }
-    // 2. 模拟登录
-    if (userNameValue.value == 'admin' && passwordValue.value == '123456') {
-        router.replace({
-            name: 'Repository'
+    // 2. 登录
+    try {
+        const responseLoginUserVO = await UserControllerService.userLogin({}, {
+            userAccount: userCountValue.value,
+            userPassword: passwordValue.value
+        })
+        if (responseLoginUserVO.statusCode == 0) {
+            store.$state.isLogin = true
+            const loginUserInfo: LoginUserVO = responseLoginUserVO.data ?? {};
+            store.$state.loginUserInfo = {
+                userId: loginUserInfo.id ?? 0,
+                userCount: userCountValue.value,
+                userName: loginUserInfo.userName ?? "登录/注册",
+                userRole: loginUserInfo.userRole ?? "",
+                userAvatar: loginUserInfo.userAvatar ?? ""
+            }
+            await router.push({
+                name: 'Repository'
+            }).then(() => {
+                window.location.reload()
+            })
+            await MessagePlugin.success({
+                content: "登录成功"
+            })
+        }
+        else {
+            await MessagePlugin.error({
+                content: responseLoginUserVO.description
+            })
+        }
+    } catch (e :any) {
+        await MessagePlugin.error({
+            content: "服务端出错: " + e?.message + " —— " + e?.name
         })
     }
 }

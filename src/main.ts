@@ -12,7 +12,7 @@ import {
     // create naive ui
     create,
     // component
-    NTabs, NTabPane
+    NTabs, NTabPane, NMenu, NSplit
 } from 'naive-ui'
 
 import 'undraw-ui/dist/style.css'
@@ -22,10 +22,15 @@ import 'vfonts/Lato.css'
 // 等宽字体
 import 'vfonts/FiraCode.css'
 
+
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+
+
 const Mit = mitt()
 
 const naive = create({
-    components: [NTabs,NTabPane]
+    components: [NTabs,NTabPane,NMenu,NSplit]
 })
 
 
@@ -39,9 +44,11 @@ declare module 'vue' {
 const app = createApp(App)
 app.config.globalProperties.$Bus = Mit
 app.use(naive)
+app.use(ElementPlus)
 app.use(VCalendar, {})
 app.use(TDesign)
 app.use(createPinia())
 app.use(router)
 app.use(UndrawUi)
+// app.use(ArcoVue);
 app.mount('#app')

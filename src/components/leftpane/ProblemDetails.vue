@@ -1,19 +1,20 @@
 <template>
     <div class="qDetails" @dblclick="stopPropagationEvent">
         <div class="problemHeader">
-            <h1 style="font-size: 27px">{{ PID }}. {{ QName }}</h1>
+            <h1 style="font-size: 27px">{{ PId }}. {{ problemData?.title }}</h1>
             <div style="flex: 1"></div>
             <div class="tackleProblemSelect">
                 <div style="margin-left: 5px; margin-right: 5px">
-                    <t-button
-                        theme="default"
-                        variant="outline"
-                        style="color: #7a7a7a"
-                        @click="visible = true"
-                    >
-                        <ListIcon style="padding-top: 3px; padding-right: 2px" />
-                        题目列表
-                    </t-button>
+                    <t-tooltip content="题库">
+                        <t-button
+                            theme="default"
+                            variant="outline"
+                            style="color: #7a7a7a"
+                            @click="visible = true"
+                        >
+                            <ListIcon style="padding-top: 1px; padding-right: 1px" />
+                        </t-button>
+                    </t-tooltip>
                 </div>
                 <div style="margin-left: 5px; margin-right: 5px">
                     <t-tooltip content="上一题">
@@ -45,23 +46,30 @@
         </div>
         <div style="margin-left: 20px">
             <t-space break-line size="3">
-                <t-tag variant="light" size="medium" shape="round" style="color: #2BA471; font-size: 13px">{{ Tag1 }}</t-tag>
+                <t-tag variant="light" size="medium" shape="round" class="difficultTag"
+                    >{{ difficultTag }}
+                </t-tag>
                 <t-divider layout="vertical" />
                 <span class="noImportantInfo"
-                    ><TimeIcon class="noImportantIcon" />时间限制: {{ 1000 }}ms</span
+                    ><TimeIcon class="noImportantIcon" />时间限制:
+                    {{ problemData?.timeLimit }}ms</span
                 >
                 <t-divider layout="vertical" />
                 <span class="noImportantInfo"
-                    ><CpuIcon class="noImportantIcon" />空间限制: {{ 128 }}M</span
+                    ><CpuIcon class="noImportantIcon" />空间限制: {{ memoryLimit }}M</span
                 >
                 <t-divider layout="vertical" />
                 <span class="noImportantInfo"
-                    ><CheckCircleIcon class="noImportantIcon" />通过率: {{ 64.13 }}%</span
+                    ><CheckCircleIcon class="noImportantIcon" />通过率: {{ passRate }}%</span
                 >
             </t-space>
         </div>
         <div>
-            <MdPreview previewTheme="github" editorId="preview-only" :modelValue="QTest" />
+            <MdPreview
+                previewTheme="vuepress"
+                editorId="preview-only"
+                :modelValue="problemData?.content"
+            />
         </div>
         <t-space direction="vertical" style="width: 100%">
             <t-collapse
@@ -72,26 +80,46 @@
                 expandIconPlacement="right"
             >
                 <t-collapse-panel value="1">
-                    <template #header><span class="noImportantInfo">算法标签</span></template>
+                    <template #header>
+                        <TagIcon style="color: #7a7a7a; padding-right: 3px" size="15px" />
+                        <span class="noImportantInfo">算法标签</span></template
+                    >
                     <template #default>
                         <t-space
                             :key="index"
-                            v-for="(item, index) in Tag2"
+                            v-for="(item, index) in problemData?.tags"
                             style="margin-right: 5px"
                         >
-                            <t-tag style="color: #7f7f7f" variant="light" size="medium" shape="round">{{ item }}</t-tag>
+                            <t-tag
+                                style="color: #7f7f7f"
+                                variant="light"
+                                size="medium"
+                                shape="round"
+                                >{{ item }}
+                            </t-tag>
                         </t-space>
                     </template>
                 </t-collapse-panel>
                 <t-collapse-panel value="2">
-                    <template #header><span class="noImportantInfo">题目来源</span></template>
+                    <template #header
+                        ><span class="noImportantInfo">
+                            <User1Icon style="color: #7a7a7a" size="15px" />
+                            题目来源</span
+                        ></template
+                    >
                     <template #default>
                         <t-space
                             :key="index"
-                            v-for="(item, index) in ProblemSource"
+                            v-for="(item, index) in problemData?.source"
                             style="margin-right: 5px"
                         >
-                            <t-tag  style="color: #7f7f7f" variant="light" size="medium" shape="round" >{{ item }}</t-tag>
+                            <t-tag
+                                style="color: #7f7f7f"
+                                variant="light"
+                                size="medium"
+                                shape="round"
+                                >{{ item }}
+                            </t-tag>
                         </t-space>
                     </template>
                 </t-collapse-panel>
@@ -106,8 +134,7 @@
             @cancel="visible = false"
             size="medium"
         >
-            <template #footer>
-            </template>
+            <template #footer></template>
             <SimpleProblemRepository></SimpleProblemRepository>
         </t-drawer>
         <FooterComponent></FooterComponent>
@@ -115,7 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import { getCurrentInstance, inject, onMounted, ref, watch } from 'vue'
+import { computed, getCurrentInstance, inject, onBeforeMount, onMounted, ref, watch } from 'vue'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
 import {
@@ -124,103 +151,120 @@ import {
     CheckCircleIcon,
     CpuIcon,
     ListIcon,
-    TimeIcon
+    TagIcon,
+    TimeIcon,
+    User1Icon
 } from 'tdesign-icons-vue-next'
 import SimpleProblemRepository from '@/components/leftpane/SimpleProblemRepository.vue'
 import { useRouter } from 'vue-router'
 import FooterComponent from '@/components/FooterComponent.vue'
+import { ProblemControllerService, type ProblemQueryResponse } from '../../../apis'
+import { MessagePlugin } from 'tdesign-vue-next'
+
+
+const router = useRouter()
 const currentComponentInstance = getCurrentInstance()
 const PId = inject<number>('PId')
 
-onMounted(() => {
+onBeforeMount(async () => {
+    await ProblemControllerService.getProblemById(Number(PId))
+        .then((res:any) => {
+            if (res.statusCode == 0) {
+                PID.value = res.data?.problemId
+                problemData.value = res.data
+                // 测试用例传送至运行组件
+                currentComponentInstance?.proxy?.$Bus.emit(
+                    'problem-test-sample',
+                    problemData.value?.testSample ?? []
+                )
+                // currentComponentInstance?.proxy?.$Bus.emit('problem-details-loading', 0)
+            } else {
+                MessagePlugin.warning({
+                    content: '题目请求出错'
+                })
+            }
+        })
+        .catch((err:any) => {
+            MessagePlugin.error({
+                content: err.message
+            })
+        })
+})
+
+onMounted(async () => {
     PID.value = PId ?? 1
-    const total = localStorage.getItem("problem-total");
+    const total = localStorage.getItem('problem-total')
     if (total != null) {
         problemTotal.value = Number(total)
     }
-    // todo 这里有一处 Bug 在做题界面清空缓存后会导致 题目总数 为0
 })
 
-const PID = ref<number>(1)
-const QName = ref<string>('A + B')
+const PID = ref<number>()
+/* 题目相关数据 */
+const problemData = ref<ProblemQueryResponse>()
+/* 难易程度标签 */
+const difficultColor = computed(() => {
+    switch (problemData.value?.difficult) {
+        case 0:
+            return '#2ba471'
+        case 1:
+            return '#FFB800'
+        case 2:
+            return '#FF2C55'
+        default:
+            return '#2ba471'
+    }
+})
+const difficultTag = computed(() => {
+    switch (problemData.value?.difficult) {
+        case 0:
+            return '简单'
+        case 1:
+            return '中等'
+        case 2:
+            return '困难'
+        default:
+            return '简单'
+    }
+})
+/* 通过率 */
+const passRate = computed(() => {
+    if (problemData.value?.submitNum == 0) {
+        return 0
+    } else {
+        return (
+            ((problemData.value?.acceptedNum ?? 0) / (problemData.value?.submitNum ?? 100)) *
+            100
+        ).toFixed(2)
+    }
+})
+/* 内存限制 */
+const memoryLimit = computed(() => {
+    return (problemData.value?.memoryLimit ?? 0) / 1024 / 1024
+})
 
-// 难易程度标签
-const Tag1 = ref<string>('简单')
-// 题目归类标签
-const Tag2 = ref<string[]>(['模拟', '测试输入输出'])
-
-const ProblemSource = ref<string[]>(['AuroraOJ', 'ACWing'])
-
-const QTest = ref<string>(
-    `------
-<font size='3px' color="#7f7f7f">
-输入两个正整数，求这两个整数的和是多少
-</font>
-
-------
-
-#### 输入
-
-<font size='3px' color="#7f7f7f">
-输入两个整数 A，B， 用空格隔开
-</font>
-
-#### 输出
-
-<font size='3px' color="#7f7f7f">
-输出一个整数，表示这两个数的和
-</font>
-
-------
-
-#### 数据范围
-
-$0 ≤ A, B ≤ 10^8$
-
-#### 样例输入
-
-\`\`\`text
-3 4
-\`\`\`
-
-#### 样例输出
-
-\`\`\`text
-7
-\`\`\`
-`
-)
-
-const stopPropagationEvent = (event: Event) => {
-    event.stopPropagation()
-}
-
+/* 算法标签、来源--多级列表展示控制相关 */
 const visible = ref(false)
 const disabled = ref(false)
 const showArrow = ref(true)
 const handlePanelChange = (val: any) => {
-    console.log('panel', val)
+    // console.log('panel', val)
 }
 
+/* 处理上一题和下一题控件相关 */
 const problemTotal = ref<number>(0)
-
 currentComponentInstance?.proxy?.$Bus.on('problem-total', (total: any) => {
     problemTotal.value = Number(total)
 })
-
 const leftMove = ref<boolean>(false)
 const rightMove = ref<boolean>(false)
-
 watch(PID, (n) => {
     if (n == 1) {
         leftMove.value = true
-    }
-    else if (n == problemTotal.value) {
+    } else if (n == problemTotal.value) {
         rightMove.value = true
     }
 })
-
-const router = useRouter()
 const tackleLeftMove = () => {
     router
         .push({
@@ -233,7 +277,6 @@ const tackleLeftMove = () => {
             router.go(0)
         })
 }
-
 const tackleRightMove = () => {
     router
         .push({
@@ -246,11 +289,16 @@ const tackleRightMove = () => {
             router.go(0)
         })
 }
+
+/* 防止双击冒泡 */
+const stopPropagationEvent = (event: any) => {
+    event.stopPropagation()
+}
 </script>
 
 <style scoped>
 .tackleProblemSelect {
-    padding-top: 10px;
+    padding-top: 5px;
     display: flex;
     padding-bottom: 10px;
     flex-wrap: wrap;
@@ -266,6 +314,20 @@ const tackleRightMove = () => {
     overflow: auto;
     height: 90vh;
 }
+.qDetails::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgb(193, 193, 193);
+    background-color: #f5f5f5;
+    border-radius: 10px;
+}
+.qDetails::-webkit-scrollbar {
+    width: 6px;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+}
+.qDetails::-webkit-scrollbar-thumb {
+    background-color: #C1C1C1;
+    border-radius: 10px;
+}
 
 .noImportantInfo {
     color: #7a7a7a;
@@ -275,5 +337,10 @@ const tackleRightMove = () => {
 .noImportantIcon {
     padding-bottom: 2px;
     padding-right: 2px;
+}
+
+.difficultTag {
+    color: v-bind(difficultColor);
+    font-size: 13px;
 }
 </style>

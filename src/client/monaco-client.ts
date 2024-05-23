@@ -27,7 +27,8 @@ import {
 } from '@codingame/monaco-vscode-files-service-override'
 
 import { MonacoEditorCodeStoreDir } from '@/client/config'
-
+import { NotifyPlugin } from 'tdesign-vue-next'
+import type { ComponentInternalInstance } from '@vue/runtime-core'
 export interface LanguageClientRunConfig {
     vscodeApiInit: boolean
     clientUrl: string
@@ -106,8 +107,9 @@ export const createUrl = (
  * 创建 WebSocket 连接
  * @param url  WebSocket 连接 URL, 例如: ws://localhost:30001/pyright
  * @param lang 编程语言
+ * @param currentComponentInstance 组件实例
  */
-export const initWebSocketAndStartClient = (url: string, lang: string): WebSocket => {
+export const initWebSocketAndStartClient = (url: string, lang: string, currentComponentInstance: ComponentInternalInstance ): WebSocket => {
     const webSocket: WebSocket = new WebSocket(url)
     webSocket.onopen = async () => {
         const socket = toSocket(webSocket)
@@ -123,12 +125,21 @@ export const initWebSocketAndStartClient = (url: string, lang: string): WebSocke
         )
         await languageClient.start()
         reader.onClose(() => languageClient.stop())
+        currentComponentInstance?.proxy?.$Bus.emit('switch-tip', 1)
+        await NotifyPlugin.success({
+            title: '已开启智能模式',
+            content: '快速补全、静态分析, 助力你AC题目',
+            placement: 'top-right'
+        })
     }
     webSocket.onerror = async () => {
         console.log('LSP 服务的 WebSocket 连接出错: -> ', url)
-    }
-    webSocket.onclose = async () => {
-        console.log(lang, ' LSP 关闭, ', url)
+        currentComponentInstance?.proxy?.$Bus.emit('switch-tip', 0)
+        await NotifyPlugin.error({
+            title: '无法开启智能模式',
+            content: '当前语言的 LSP 服务未启动',
+            placement: 'top-right'
+        })
     }
     return webSocket
 }
